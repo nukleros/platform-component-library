@@ -1,0 +1,23 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "cert-manager rbac"
+    path: "../../vendor/cert-manager.yaml"
+    outputPath: "certificates/cert-manager/rbac.yaml"
+    overlays:
+      - name: "ensure we are only acting upon rbac resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ServiceAccount")]
+              - query: $[?($.kind != "Role")]
+              - query: $[?($.kind != "RoleBinding")]
+              - query: $[?($.kind != "ClusterRole")]
+              - query: $[?($.kind != "ClusterRoleBinding")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"

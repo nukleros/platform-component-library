@@ -1,0 +1,94 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "cert-manager deployments"
+    path: "../../vendor/cert-manager.yaml"
+    outputPath: "certificates/cert-manager/deployment.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployment resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure replicas are updated"
+        query: spec.replicas
+        value: !!int {{ .replicas }}
+
+      - name: "ensure leader election namespace is updated"
+        query: spec.template.spec.containers[*].args[?(@ =~ /^--leader-election-namespace/)]
+        value: --leader-election-namespace=$(POD_NAMESPACE)
+
+      - name: "ensure namespace for dns names is updated"
+        query: spec.template.spec.containers[0].args[?(@ =~ /^--dynamic-serving-dns-names=/)]
+        value: "--dynamic-serving-dns-names=cert-manager-webhook,cert-manager-webhook.$(POD_NAMESPACE),cert-manager-webhook.$(POD_NAMESPACE).svc"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "ensure pod security context is updated"
+        query: spec.template.spec.securityContext
+        action: replace
+        value:
+          fsGroup: 1001
+          runAsUser: 1001
+          runAsGroup: 1001
+          runAsNonRoot: true
+
+      - name: "ensure container security context is updated"
+        query: spec.template.spec.containers[*].securityContext
+        action: replace
+        onMissing:
+          action: inject
+        value:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+
+      - name: "ensure controller resources are updated"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            requests:
+              cpu: "{{ .controller.resources.requests.cpu }}"
+              memory: "{{ .controller.resources.requests.memory }}"
+            limits:
+              cpu: "{{ .controller.resources.limits.cpu }}"
+              memory: "{{ .controller.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+
+      - name: "ensure injector resources are updated"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            requests:
+              cpu: "{{ .injector.resources.requests.cpu }}"
+              memory: "{{ .injector.resources.requests.memory }}"
+            limits:
+              cpu: "{{ .injector.resources.limits.cpu }}"
+              memory: "{{ .injector.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+
+      - name: "ensure webhook resources are updated"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            requests:
+              cpu: "{{ .webhook.resources.requests.cpu }}"
+              memory: "{{ .webhook.resources.requests.memory }}"
+            limits:
+              cpu: "{{ .webhook.resources.limits.cpu }}"
+              memory: "{{ .webhook.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]

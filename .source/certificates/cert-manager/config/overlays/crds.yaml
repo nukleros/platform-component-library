@@ -1,0 +1,13 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "cert-manager custom resource definitions"
+    path: "../../vendor/cert-manager.yaml"
+    outputPath: "certificates/cert-manager/crds.yaml"
+    overlays:
+      - name: "ensure we are only acting upon crds"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "CustomResourceDefinition")]

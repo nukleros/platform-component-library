@@ -1,0 +1,29 @@
+---
+namespace: certificates-system
+replicas: 2
+injector:
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      cpu: "100m"
+      memory: "128Mi"
+controller:
+  replicas: 2
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "32Mi"
+    limits:
+      cpu: "50m"
+      memory: "64Mi"
+webhook:
+  replicas: 2
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "32Mi"
+    limits:
+      cpu: "50m"
+      memory: "64Mi"

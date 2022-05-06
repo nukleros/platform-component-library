@@ -1,0 +1,24 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "cert-manager webhooks"
+    path: "../../vendor/cert-manager.yaml"
+    outputPath: "certificates/cert-manager/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - webhooks[*].clientConfig.service.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure webhook annotation with appropriate namespace is updated"
+        query: metadata.annotations['cert-manager.io/inject-ca-from-secret']
+        value: "{{ .namespace }}/cert-manager-webhook-ca"
