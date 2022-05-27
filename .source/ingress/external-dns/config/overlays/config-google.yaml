@@ -1,0 +1,12 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "external-dns config"
+    path: "../../static/config-google.yaml"
+    outputPath: "ingress/external-dns/config-google.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+        onMissing:
+          action: inject

@@ -28,7 +28,7 @@ commonOverlays:
 yamlFiles:
   - name: "external-dns deployments"
     path: "../../vendor/external-dns-deployment.yaml"
-    outputPath: "ingress/external-dns/active-directory-deployment.yaml"
+    outputPath: "ingress/external-dns/deployment-active-directory.yaml"
     overlays:
       - name: "update deployment spec"
         query: $

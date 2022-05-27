@@ -6,19 +6,19 @@ commonOverlays:
     value:
       metadata:
         labels:
-          app: external-dns-route53
-          app.kubernetes.io/name: external-dns-route53
+          app: external-dns-google
+          app.kubernetes.io/name: external-dns-google
           app.kubernetes.io/instance: external-dns
           platform.kubernetes.io/purpose: dns-updates
       spec:
         selector:
           matchLabels:
-            app: external-dns-route53
+            app: external-dns-google
         template:
           metadata:
             labels:
-              app: external-dns-route53
-              app.kubernetes.io/name: external-dns-route53
+              app: external-dns-google
+              app.kubernetes.io/name: external-dns-google
               app.kubernetes.io/instance: external-dns
               platform.kubernetes.io/purpose: dns-updates
     documentQuery:
@@ -28,13 +28,13 @@ commonOverlays:
 yamlFiles:
   - name: "external-dns deployments"
     path: "../../vendor/external-dns-deployment.yaml"
-    outputPath: "ingress/external-dns/deployment-route53.yaml"
+    outputPath: "ingress/external-dns/deployment-google.yaml"
     overlays:
       - name: "update deployment spec"
         query: $
         value:
           metadata:
-            name: "{{ .names.route53 }}"
+            name: "{{ .names.google }}"
             namespace: "{{ .namespace }}"
           spec:
             replicas: !!int {{ .replicas }}
@@ -58,14 +58,14 @@ yamlFiles:
                               - key: app.kubernetes.io/name
                                 operator: In
                                 values:
-                                  - "{{ .names.route53 }}"
+                                  - "{{ .names.google }}"
 
       - name: "update container spec"
         query: spec.template.spec.containers[*]
         value:
           envFrom:
             - secretRef:
-                name: external-dns-route53
+                name: external-dns-google
           image: "{{ .image }}"
           imagePullPolicy: IfNotPresent
           securityContext:

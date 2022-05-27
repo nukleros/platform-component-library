@@ -2,10 +2,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: external-dns-route53
+  name: external-dns-google
   labels:
-    app: external-dns-route53
-    app.kubernetes.io/name: external-dns-route53
+    app: external-dns-google
+    app.kubernetes.io/name: external-dns-google
     app.kubernetes.io/instance: external-dns
     platform.kubernetes.io/purpose: dns-updates
   namespace: ingress-system
@@ -14,12 +14,12 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: external-dns-route53
+      app: external-dns-google
   template:
     metadata:
       labels:
-        app: external-dns-route53
-        app.kubernetes.io/name: external-dns-route53
+        app: external-dns-google
+        app.kubernetes.io/name: external-dns-google
         app.kubernetes.io/instance: external-dns
         platform.kubernetes.io/purpose: dns-updates
     spec:
@@ -33,7 +33,7 @@ spec:
             - --registry=txt
           envFrom:
             - secretRef:
-                name: external-dns-route53
+                name: external-dns-google
           imagePullPolicy: IfNotPresent
           securityContext:
             allowPrivilegeEscalation: false
@@ -66,5 +66,5 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - external-dns-route53
+                        - external-dns-google
   replicas: 1

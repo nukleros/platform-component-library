@@ -1,0 +1,14 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: external-dns-google
+  namespace: ingress-system
+stringData:
+  EXTERNAL_DNS_TXT_OWNER_ID: external-dns-
+  EXTERNAL_DNS_TXT_PREFIX: external-dns-
+  EXTERNAL_DNS_PROVIDER: google
+  EXTERNAL_DNS_GOOGLE_ZONE_VISIBILITY: private
+  EXTERNAL_DNS_GOOGLE_PROJECT: my-project
+  EXTERNAL_DNS_DOMAIN_FILTER: mydomain.com
+  EXTERNAL_DNS_POLICY: sync
