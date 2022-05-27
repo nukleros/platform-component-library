@@ -24,5 +24,5 @@ download:
 
 overlay:
 	@for OVERLAY in `ls .source/$(GROUP)/$(PROJECT)/config/overlays`; do \
-		yot -I 2 -i .source/$(GROUP)/$(PROJECT)/config/overlays/$$OVERLAY -o . -f .source/$(GROUP)/$(PROJECT)/config/values.yaml --remove-comments;\
+		yot -I 2 -i .source/$(GROUP)/$(PROJECT)/config/overlays/$$OVERLAY -o . -f .source/$(GROUP)/$(PROJECT)/config/values.yaml --remove-comments -s > $(GROUP)/$(PROJECT)/$$OVERLAY;\
 	done

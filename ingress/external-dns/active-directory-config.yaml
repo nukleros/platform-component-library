@@ -1,0 +1,46 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: external-dns-active-directory
+  namespace: ingress-system
+stringData:
+  EXTERNAL_DNS_OWNER_PREFIX: external-dns-
+  EXTERNAL_DNS_TXT_PREFIX: external-dns-
+  ACTIVE_DIRECTORY_HOSTNAME: ad.mydomain.com
+  ACTIVE_DIRECTORY_USERNAME: administrator
+  ACTIVE_DIRECTORY_PASSWORD: thisisinsecure
+  ACTIVE_DIRECTORY_REALM: MYDOMAIN.COM
+  ACTIVE_DIRECTORY_DOMAIN: mydomain.com
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: external-dns-active-directory-kerberos
+  namespace: ingress-system
+data:
+  krb5.conf: |
+    [logging]
+    default = FILE:/var/log/krb5libs.log
+    kdc = FILE:/var/log/krb5kdc.log
+    admin_server = FILE:/var/log/kadmind.log
+
+    [libdefaults]
+    dns_lookup_realm = true
+    dns_lookup_kdc = true
+    ticket_lifetime = 24h
+    renew_lifetime = 7d
+    forwardable = true
+    rdns = false
+    pkinit_anchors = /etc/pki/tls/certs/ca-bundle.crt
+    default_ccache_name = KEYRING:persistent:%{uid}
+    default_realm = MYDOMAIN.COM
+
+    [realms]
+    MYDOMAIN.COM = {
+      admin_server = mydomain.com
+    }
+
+    [domain_realm]
+    mydomain.com = MYDOMAIN.COM
+    .mydomain.com = MYDOMAIN.COM

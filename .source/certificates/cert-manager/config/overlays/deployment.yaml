@@ -1,5 +1,14 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "inject the platform purpose label"
+    query: "metadata"
+    value:
+      labels:
+        platform.kubernetes.io/purpose: certificates
+    documentQuery:
+      - conditions:
+          - query: $[?($.kind != "Deployment")]
+
 yamlFiles:
   - name: "cert-manager deployments"
     path: "../../vendor/cert-manager.yaml"

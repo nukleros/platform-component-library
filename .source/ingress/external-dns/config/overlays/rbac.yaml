@@ -1,0 +1,34 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "external-dns service account"
+    path: "../../vendor/external-dns-serviceaccount.yaml"
+    outputPath: "ingress/external-dns/rbac.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+        onMissing:
+          action: inject
+
+  - name: "external-dns clusterrole"
+    path: "../../vendor/external-dns-clusterrole.yaml"
+    outputPath: "ingress/external-dns/rbac.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+        onMissing:
+          action: inject
+
+  - name: "external-dns clusterrolebinding"
+    path: "../../vendor/external-dns-clusterrolebinding.yaml"
+    outputPath: "ingress/external-dns/rbac.yaml"
+    onMissing:
+      action: inject
+    overlays:
+      - name: "ensure namespace is updated"
+        query: subjects[*].namespace
+        value: "{{ .namespace }}"
+        onMissing:
+          action: inject

@@ -1,0 +1,15 @@
+---
+namespace: ingress-system
+replicas: 1
+resources:
+  requests:
+    cpu: "25m"
+    memory: "32Mi"
+  limits:
+    cpu: "50m"
+    memory: "64Mi"
+names:
+  active_directory: external-dns-active-directory
+  route53: external-dns-route53
+  google: external-dns-google
+image: k8s.gcr.io/external-dns/external-dns:v0.12.0
