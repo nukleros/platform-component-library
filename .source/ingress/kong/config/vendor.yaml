@@ -1,0 +1,10 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.27.0
+directories:
+  - path: .source/ingress/kong/vendor
+    contents:
+      - path: ./
+        http:
+          url: https://raw.githubusercontent.com/Kong/kubernetes-ingress-controller/v2.3.1/deploy/single/all-in-one-dbless-k4k8s-enterprise.yaml

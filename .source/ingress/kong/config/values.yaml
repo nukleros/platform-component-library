@@ -1,0 +1,13 @@
+---
+namespace: ingress-system
+replicas: 2
+resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "400m"
+    memory: "384Mi"
+images:
+  controller:
+  proxy:

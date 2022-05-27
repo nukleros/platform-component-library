@@ -1,0 +1,17 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "kong ingress class"
+    path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"
+    outputPath: "ingress/kong/ingress-class.yaml"
+    overlays:
+      - name: "ensure we are only acting upon ingress classes"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "IngressClass")]
+
+      - name: "ensure creation timestamp is missing"
+        query: metadata.creationTimestamp
+        action: delete

@@ -1,0 +1,17 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "kong custom resource definitions"
+    path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"
+    outputPath: "ingress/kong/crds.yaml"
+    overlays:
+      - name: "ensure we are only acting upon crds"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "CustomResourceDefinition")]
+
+      - name: "ensure creation timestamp is missing"
+        query: metadata.creationTimestamp
+        action: delete

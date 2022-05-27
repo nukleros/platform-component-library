@@ -1,0 +1,126 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "kong deployments"
+    path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"
+    outputPath: "ingress/kong/deployment.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployments"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure creation timestamp is missing"
+        query: metadata.creationTimestamp
+        action: delete
+
+      - name: "update deployment spec"
+        query: $
+        value:
+          metadata:
+            namespace: "{{ .namespace }}"
+            labels:
+              app.kubernetes.io/name: kong-ingress
+              platform.kubernetes.io/purpose: ingress
+          spec:
+            replicas: !!int {{ .replicas }}
+            template:
+              spec:
+                securityContext:
+                  fsGroup: 1001
+                  runAsUser: 1001
+                  runAsGroup: 1001
+                  runAsNonRoot: true
+                nodeSelector:
+                  kubernetes.io/os: linux
+                volumes:
+                  - name: kong-prefix-dir
+                    emptyDir: {}
+                  - name: kong-tmp
+                    emptyDir: {}
+                affinity:
+                  podAntiAffinity:
+                    preferredDuringSchedulingIgnoredDuringExecution:
+                      - weight: 100
+                        podAffinityTerm:
+                          topologyKey: kubernetes.io/hostname
+                          labelSelector:
+                            matchExpressions:
+                              - key: app.kubernetes.io/name
+                                operator: In
+                                values:
+                                  - kong-ingress
+
+      - name: "update controller container spec"
+        query: spec.template.spec.containers[?(@.name == 'ingress-controller')]
+        value:
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "{{ .resources.requests.cpu }}"
+              memory: "{{ .resources.requests.memory }}"
+            limits:
+              cpu: "{{ .resources.limits.cpu }}"
+              memory: "{{ .resources.limits.memory }}"
+          env:
+            - name: KONG_LUA_PACKAGE_PATH
+              value: "/opt/?.lua;/opt/?/init.lua;;"
+
+      - name: "update proxy container spec"
+        query: spec.template.spec.containers[?(@.name == 'proxy')]
+        value:
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: "{{ .resources.requests.cpu }}"
+              memory: "{{ .resources.requests.memory }}"
+            limits:
+              cpu: "{{ .resources.limits.cpu }}"
+              memory: "{{ .resources.limits.memory }}"
+          env:
+            - name: KONG_LUA_PACKAGE_PATH
+              value: "/opt/?.lua;/opt/?/init.lua;;"
+            - name: KONG_PREFIX
+              value: "/kong_prefix/"
+          volumeMounts:
+            - name: kong-prefix-dir
+              mountPath: /kong_prefix/
+            - name: kong-tmp
+              mountPath: /tmp
+
+      - name: "ensure license key is optional"
+        query: spec.template.spec.containers[*].env[?(@.name == 'KONG_LICENSE_DATA')]
+        value:
+          valueFrom:
+            secretKeyRef:
+              optional: true
+
+      - name: "ensure license key is optional"
+        query: spec.template.spec.containers[*].env[?(@.name == 'KONG_DATABASE')].value
+        value: |
+          off
+
+      - name: "ensure license key is optional"
+        query: spec.template.spec.containers[*].env[?(@.name == 'KONG_KIC')].value
+        value: |
+          on
+
+      - name: "ensure license key is optional"
+        query: spec.template.spec.containers[*].env[?(@.name == 'CONTROLLER_PUBLISH_SERVICE')].value
+        value: "{{ .namespace }}/kong-proxy"
+
+      - name: "ensure we are not using image pull secrets"
+        query: spec.template.spec.imagePullSecrets
+        action: delete

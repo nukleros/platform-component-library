@@ -1,0 +1,21 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "kong services"
+    path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"
+    outputPath: "ingress/kong/service.yaml"
+    overlays:
+      - name: "ensure we are only acting upon services"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Service")]
+
+      - name: "ensure creation timestamp is missing"
+        query: metadata.creationTimestamp
+        action: delete
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
