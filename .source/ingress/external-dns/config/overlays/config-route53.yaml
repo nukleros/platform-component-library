@@ -2,8 +2,8 @@
 commonOverlays: []
 yamlFiles:
   - name: "external-dns config"
-    path: "../../static/active-directory-config.yaml"
-    outputPath: "ingress/external-dns/active-directory-config.yaml"
+    path: "../../static/config-route53.yaml"
+    outputPath: "ingress/external-dns/config-route53.yaml"
     overlays:
       - name: "ensure namespace is updated"
         query: metadata.namespace

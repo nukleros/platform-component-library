@@ -1,0 +1,10 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: external-dns-route53
+  namespace: ingress-system
+stringData:
+  ROUTE53_DOMAIN: mydomain.com
+  EXTERNAL_DNS_OWNER_PREFIX: external-dns-
+  EXTERNAL_DNS_TXT_PREFIX: external-dns-

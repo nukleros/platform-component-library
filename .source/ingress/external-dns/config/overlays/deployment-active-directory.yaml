@@ -6,13 +6,19 @@ commonOverlays:
     value:
       metadata:
         labels:
-          app.kubernetes.io/name: external-dns
+          app: external-dns-active-directory
+          app.kubernetes.io/name: external-dns-active-directory
+          app.kubernetes.io/instance: external-dns
           platform.kubernetes.io/purpose: dns-updates
       spec:
+        selector:
+          matchLabels:
+            app: external-dns-active-directory
         template:
           metadata:
             labels:
-              app.kubernetes.io/name: external-dns
+              app.kubernetes.io/name: external-dns-active-directory
+              app.kubernetes.io/instance: external-dns
               platform.kubernetes.io/purpose: dns-updates
     documentQuery:
       - conditions:

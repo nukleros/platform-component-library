@@ -4,7 +4,9 @@ kind: Deployment
 metadata:
   name: external-dns-active-directory
   labels:
-    app.kubernetes.io/name: external-dns
+    app: external-dns-active-directory
+    app.kubernetes.io/name: external-dns-active-directory
+    app.kubernetes.io/instance: external-dns
     platform.kubernetes.io/purpose: dns-updates
   namespace: ingress-system
 spec:
@@ -12,12 +14,13 @@ spec:
     type: Recreate
   selector:
     matchLabels:
-      app: external-dns
+      app: external-dns-active-directory
   template:
     metadata:
       labels:
         app: external-dns
-        app.kubernetes.io/name: external-dns
+        app.kubernetes.io/name: external-dns-active-directory
+        app.kubernetes.io/instance: external-dns
         platform.kubernetes.io/purpose: dns-updates
     spec:
       serviceAccountName: external-dns
