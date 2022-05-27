@@ -17,6 +17,7 @@ commonOverlays:
         template:
           metadata:
             labels:
+              app: external-dns-route53
               app.kubernetes.io/name: external-dns-route53
               app.kubernetes.io/instance: external-dns
               platform.kubernetes.io/purpose: dns-updates
@@ -33,7 +34,7 @@ yamlFiles:
         query: $
         value:
           metadata:
-            name: "{{ .names.active_directory }}"
+            name: "{{ .names.route53 }}"
             namespace: "{{ .namespace }}"
           spec:
             replicas: !!int {{ .replicas }}
@@ -57,7 +58,7 @@ yamlFiles:
                               - key: app.kubernetes.io/name
                                 operator: In
                                 values:
-                                  - "{{ .names.active_directory }}"
+                                  - "{{ .names.route53 }}"
 
       - name: "update container spec"
         query: spec.template.spec.containers[*]
@@ -80,9 +81,9 @@ yamlFiles:
               cpu: "{{ .resources.limits.cpu }}"
               memory: "{{ .resources.limits.memory }}"
 
-      - name: "replace container args for active directory"
+      - name: "replace container args for route53"
         query: spec.template.spec.containers[*].args
-        action: replace
+        action: merge
         onMissing:
           action: inject
         value:

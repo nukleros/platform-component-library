@@ -5,13 +5,19 @@ metadata:
   name: external-dns-active-directory
   namespace: ingress-system
 stringData:
-  EXTERNAL_DNS_OWNER_PREFIX: external-dns-
+  EXTERNAL_DNS_TXT_OWNER_ID: external-dns-
   EXTERNAL_DNS_TXT_PREFIX: external-dns-
-  ACTIVE_DIRECTORY_HOSTNAME: ad.mydomain.com
-  ACTIVE_DIRECTORY_USERNAME: administrator
-  ACTIVE_DIRECTORY_PASSWORD: thisisinsecure
-  ACTIVE_DIRECTORY_REALM: MYDOMAIN.COM
-  ACTIVE_DIRECTORY_DOMAIN: mydomain.com
+  EXTERNAL_DNS_PROVIDER: rfc2136
+  EXTERNAL_DNS_RFC2136_HOST: ad.mydomain.com
+  EXTERNAL_DNS_RFC2136_PORT: "53"
+  EXTERNAL_DNS_RFC2136_ZONE: mydomain.com
+  EXTERNAL_DNS_DOMAIN_FILTER: mydomain.com
+  EXTERNAL_DNS_RFC2136_KERBEROS_REALM: MYDOMAIN.COM
+  EXTERNAL_DNS_RFC2136_KERBEROS_USERNAME: administrator
+  EXTERNAL_DNS_RFC2136_KERBEROS_PASSWORD: thisisinsecure
+  EXTERNAL_DNS_RFC2136_GSS_TSIG: "true"
+  EXTERNAL_DNS_RFC2136_TSIG_AXFR: "true"
+  EXTERNAL_DNS_POLICY: sync
 ---
 apiVersion: v1
 kind: ConfigMap

@@ -5,6 +5,14 @@ metadata:
   name: external-dns-route53
   namespace: ingress-system
 stringData:
-  ROUTE53_DOMAIN: mydomain.com
-  EXTERNAL_DNS_OWNER_PREFIX: external-dns-
-  EXTERNAL_DNS_TXT_PREFIX: external-dns-
+  EXTERNAL_DNS_TXT_OWNER_ID: "external-dns-"
+  EXTERNAL_DNS_TXT_PREFIX: "external-dns-"
+  EXTERNAL_DNS_PROVIDER: "aws"
+  EXTERNAL_DNS_AWS_ZONE_TYPE: "private"
+  EXTERNAL_DNS_AWS_PREFER_CNAME: "true"
+  EXTERNAL_DNS_DOMAIN_FILTER: "mydomain.com"
+  EXTERNAL_DNS_POLICY: "sync"
+
+  # these can safely be omitted if IRSA of kube2iam/kiam is used
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""

@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        app: external-dns
+        app: external-dns-active-directory
         app.kubernetes.io/name: external-dns-active-directory
         app.kubernetes.io/instance: external-dns
         platform.kubernetes.io/purpose: dns-updates
@@ -31,19 +31,6 @@ spec:
             - --source=service
             - --source=ingress
             - --registry=txt
-            - --txt-owner-id=$(EXTERNAL_DNS_OWNER_PREFIX)
-            - --txt-prefix=$(EXTERNAL_DNS_OWNER_PREFIX)
-            - --provider=rfc2136
-            - --rfc2136-gss-tsig
-            - --rfc2136-tsig-axfr
-            - --rfc2136-host=$(ACTIVE_DIRECTORY_HOSTNAME)
-            - --rfc2136-port=53
-            - --rfc2136-kerberos-username=$(ACTIVE_DIRECTORY_USERNAME)
-            - --rfc2136-kerberos-password=$(ACTIVE_DIRECTORY_PASSWORD)
-            - --rfc2136-kerberos-realm=$(ACTIVE_DIRECTORY_REALM)
-            - --rfc2136-zone=$(ACTIVE_DIRECTORY_DOMAIN)
-            - --domain-filter=$(ACTIVE_DIRECTORY_DOMAIN)
-            - --policy=sync
           envFrom:
             - secretRef:
                 name: external-dns-active-directory

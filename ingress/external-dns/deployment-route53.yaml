@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: external-dns-active-directory
+  name: external-dns-route53
   labels:
     app: external-dns-route53
     app.kubernetes.io/name: external-dns-route53
@@ -18,7 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        app: external-dns
+        app: external-dns-route53
         app.kubernetes.io/name: external-dns-route53
         app.kubernetes.io/instance: external-dns
         platform.kubernetes.io/purpose: dns-updates
@@ -28,6 +28,9 @@ spec:
         - name: external-dns
           image: k8s.gcr.io/external-dns/external-dns:v0.12.0
           args:
+            - --source=service
+            - --source=ingress
+            - --registry=txt
             - --source=service
             - --source=ingress
             - --registry=txt
@@ -73,5 +76,5 @@ spec:
                     - key: app.kubernetes.io/name
                       operator: In
                       values:
-                        - external-dns-active-directory
+                        - external-dns-route53
   replicas: 1
