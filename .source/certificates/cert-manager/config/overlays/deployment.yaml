@@ -65,6 +65,28 @@ yamlFiles:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager")]
 
+      - name: "ensure controller affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - cert-manager
+          nodeSelector:
+            kubernetes.io/os: linux
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+
       - name: "ensure injector resources are updated"
         query: spec.template.spec.containers[*]
         value:
@@ -79,6 +101,28 @@ yamlFiles:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager-cainjector")]
 
+      - name: "ensure injector affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - cert-manager-cainjector
+          nodeSelector:
+            kubernetes.io/os: linux
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+
       - name: "ensure webhook resources are updated"
         query: spec.template.spec.containers[*]
         value:
@@ -89,6 +133,28 @@ yamlFiles:
             limits:
               cpu: "{{ .webhook.resources.limits.cpu }}"
               memory: "{{ .webhook.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "ensure webhook affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - cert-manager-cainjector
+          nodeSelector:
+            kubernetes.io/os: linux
         documentQuery:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager-webhook")]
