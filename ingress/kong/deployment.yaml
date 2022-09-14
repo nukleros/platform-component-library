@@ -16,10 +16,12 @@ spec:
     metadata:
       annotations:
         kuma.io/gateway: enabled
+        kuma.io/service-account-token-volume: kong-serviceaccount-token
         traffic.sidecar.istio.io/includeInboundPorts: ""
       labels:
         app: ingress-kong
     spec:
+      automountServiceAccountToken: false
       containers:
         - env:
             - name: KONG_LICENSE_DATA
@@ -37,11 +39,13 @@ spec:
             - name: KONG_STATUS_LISTEN
               value: 0.0.0.0:8100
             - name: KONG_DATABASE
-              value: "off"
+              value: |
+                off
             - name: KONG_NGINX_WORKER_PROCESSES
               value: "2"
             - name: KONG_KIC
-              value: "on"
+              value: |
+                on
             - name: KONG_ADMIN_ACCESS_LOG
               value: /dev/stdout
             - name: KONG_ADMIN_ERROR_LOG
@@ -52,7 +56,7 @@ spec:
               value: /opt/?.lua;/opt/?/init.lua;;
             - name: KONG_PREFIX
               value: /kong_prefix/
-          image: kong/kong-gateway:2.7
+          image: kong/kong-gateway:2.8
           lifecycle:
             preStop:
               exec:
@@ -129,7 +133,7 @@ spec:
                   fieldPath: metadata.namespace
             - name: KONG_LUA_PACKAGE_PATH
               value: /opt/?.lua;/opt/?/init.lua;;
-          image: kong/kubernetes-ingress-controller:2.3.1
+          image: kong/kubernetes-ingress-controller:2.5.0
           imagePullPolicy: IfNotPresent
           livenessProbe:
             failureThreshold: 3
@@ -159,6 +163,10 @@ spec:
             periodSeconds: 10
             successThreshold: 1
             timeoutSeconds: 1
+          volumeMounts:
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: kong-serviceaccount-token
+              readOnly: true
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -173,6 +181,21 @@ spec:
               cpu: 400m
               memory: 384Mi
       serviceAccountName: kong-serviceaccount
+      volumes:
+        - name: kong-serviceaccount-token
+          secret:
+            items:
+              - key: token
+                path: token
+              - key: ca.crt
+                path: ca.crt
+              - key: namespace
+                path: namespace
+            secretName: kong-serviceaccount-token
+        - name: kong-prefix-dir
+          emptyDir: {}
+        - name: kong-tmp
+          emptyDir: {}
       securityContext:
         fsGroup: 1001
         runAsUser: 1001
@@ -180,11 +203,6 @@ spec:
         runAsNonRoot: true
       nodeSelector:
         kubernetes.io/os: linux
-      volumes:
-        - name: kong-prefix-dir
-          emptyDir: {}
-        - name: kong-tmp
-          emptyDir: {}
       affinity:
         podAntiAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
