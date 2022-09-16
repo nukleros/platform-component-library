@@ -1,0 +1,78 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx deployments"
+    path: "../../vendor/deployment/nginx-ingress.yaml"
+    outputPath: "ingress/ingress/deployment.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure replicas are updated"
+        query: spec.replicas
+        value: !!int {{ .replicas }}
+
+      - name: "ensure resource limits are added"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+
+      - name: "add deployment labels"
+        query: $
+        value:
+          metadata:
+            labels:
+              app.kubernetes.io/name: nginx-ingress
+              platform.nukleros.io/purpose: ingress
+
+      - name: "update pod metadata"
+        query: spec.template.metadata
+        action: merge
+        value:
+          labels:
+            app.kubernetes.io/name: nginx-ingress
+            platform.nukleros.io/purpose: ingress
+
+      - name: "ensure anit-affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - nginx-ingress
+          nodeSelector:
+            kubernetes.io/os: linux
+
+      - name: "expose prometheus metrics"
+        query: spec.template.metadata
+        action: merge
+        value:
+          annotations:
+            prometheus.io/scrape: "true"
+            prometheus.io/port: "9113"
+            prometheus.io/scheme: http
+
+      - name: "set command arguments in container"
+        query: spec.template.spec.containers[*]
+        value:
+          args:
+            - -enable-cert-manager
+            - -enable-external-dns
+            - -v=3 # Enables extensive logging. Useful for troubleshooting.
+            - -report-ingress-status
+            - -external-service=nginx-ingress
+            - -enable-prometheus-metrics
+

@@ -1,0 +1,11 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx services"
+    path: "../../vendor/service/nodeport.yaml"
+    outputPath: "ingress/nginx/service-nodeport.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+

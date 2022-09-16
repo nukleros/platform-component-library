@@ -1,0 +1,7 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx custom resource definitions"
+    path: "../../vendor/common/crds"
+    outputPath: "ingress/nginx"
+

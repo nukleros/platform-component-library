@@ -1,0 +1,11 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx configmap"
+    path: "../../vendor/common/nginx-config.yaml"
+    outputPath: "ingress/nginx/config.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
