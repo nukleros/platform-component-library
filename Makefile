@@ -24,7 +24,7 @@ project:
 	@touch .source/$(GROUP)/$(PROJECT)/config/vendor.yaml .source/$(GROUP)/$(PROJECT)/config/values.yaml
 
 download:
-	@vendir sync -f .source/$(GROUP)/$(PROJECT)/config/vendor.yaml --lock-file .source/$(GROUP)/$(PROJECT)/config/vendor.yaml.lock
+	@GROUP=$(GROUP) PROJECT=$(PROJECT) .scripts/download.sh
 
 overlay:
 	@for OVERLAY in `ls .source/$(GROUP)/$(PROJECT)/config/overlays`; do \
