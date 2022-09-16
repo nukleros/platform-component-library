@@ -1,4 +1,4 @@
 ---
-namespace: ingress-system
+namespace: nukleros-ingress-system
 replicas: 2
 
