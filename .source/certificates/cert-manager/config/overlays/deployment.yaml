@@ -4,7 +4,7 @@ commonOverlays:
     query: "metadata"
     value:
       labels:
-        platform.kubernetes.io/purpose: certificates
+        platform.nukleros.io/purpose: certificates
     documentQuery:
       - conditions:
           - query: $[?($.kind != "Deployment")]

@@ -9,7 +9,7 @@ commonOverlays:
           app: external-dns-google
           app.kubernetes.io/name: external-dns-google
           app.kubernetes.io/instance: external-dns
-          platform.kubernetes.io/purpose: dns-updates
+          platform.nukleros.io/purpose: dns-updates
       spec:
         selector:
           matchLabels:
@@ -20,7 +20,7 @@ commonOverlays:
               app: external-dns-google
               app.kubernetes.io/name: external-dns-google
               app.kubernetes.io/instance: external-dns
-              platform.kubernetes.io/purpose: dns-updates
+              platform.nukleros.io/purpose: dns-updates
     documentQuery:
       - conditions:
           - query: $[?($.kind == "Deployment")]
