@@ -1,0 +1,31 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx cluster role"
+    path: "../../vendor/rbac/rbac.yaml"
+    outputPath: "ingress/nginx/rbac.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
+
+  - name: "nginx service account"
+    path: "../../vendor/common/ns-and-sa.yaml"
+    outputPath: "ingress/nginx/rbac.yaml"
+    overlays:
+      - name: "ensure we are only acting upon service account resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ServiceAccount")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
+
+

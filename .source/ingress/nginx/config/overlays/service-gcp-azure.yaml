@@ -1,0 +1,11 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx services"
+    path: "../../vendor/service/loadbalancer.yaml"
+    outputPath: "ingress/nginx/service-gcp-azuer.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+

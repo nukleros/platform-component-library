@@ -23,7 +23,7 @@ yamlFiles:
             namespace: "{{ .namespace }}"
             labels:
               app.kubernetes.io/name: kong-ingress
-              platform.kubernetes.io/purpose: ingress
+              platform.nukleros.io/purpose: ingress
           spec:
             replicas: !!int {{ .replicas }}
             template:

@@ -1,0 +1,7 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx ingress class"
+    path: "../../vendor/common/ingress-class.yaml"
+    outputPath: "ingress/nginx"
+

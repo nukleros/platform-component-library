@@ -1,0 +1,11 @@
+---
+commonOverlays: []
+yamlFiles:
+  - name: "nginx services"
+    path: "../../vendor/service/loadbalancer-aws-elb.yaml"
+    outputPath: "ingress/nginx/service-aws.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+

@@ -22,6 +22,17 @@ encode changes that we find useful to the source manifests.
 This allows us to readily keep the component configs up-to-date with latest
 versions.
 
+## Supported Projects
+
+Following are the currently supported groups and projects.
+
+* certificates
+    * Cert Manager
+* ingress
+    * External DNS
+    * Kong Ingress Controller
+    * Nginx Ingress Controller
+
 ## Version Upgrade
 
 Following is an example of upgrading the cert-manager manifests.

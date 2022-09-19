@@ -1,0 +1,4 @@
+---
+namespace: nukleros-ingress-system
+replicas: 2
+

@@ -1,0 +1,26 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.30.0
+directories:
+  - path: .source/ingress/nginx/vendor
+    contents:
+      - path: ./
+        git:
+          url: https://github.com/nginxinc/kubernetes-ingress.git
+          ref: v2.3.0
+        includePaths:
+          - deployments/**/*
+        excludePaths:
+          - deployments/common/crds/appprotect*
+          - deployments/common/default-server-secret.yaml
+          - deployments/daemon-set/nginx-plus-ingress.yaml
+          - deployments/deployment/appprotect-dos-arb.yaml
+          - deployments/deployment/nginx-plus-ingress.yaml
+          - deployments/helm-chart-dos-arbitrator/**/*
+          - deployments/helm-chart/**/*
+          - deployments/service/appprotect-dos-arb-svc.yaml
+          - deployments/rbac/ap*
+          - deployments/README.md
+        newRootPath: deployments
+
