@@ -25,13 +25,14 @@ versions.
 ## Purpose
 
 The primary purpose for this project is to maintain manifests that are used in
-other projects to build Kubernetes Operators.  Those projects introduce the
-configurations necessary for production use.
+other projects as a basis for installing platform components.  This project helps
+keep component manifests up-to-date with upstream sources so that downstream
+projects can extend them as needed.
 
 Secondarily, the manifests in this repo can be used as-is for testing and
 development environments.
 
-As such, The manifests in this project are not intended to provide configuration
+As such, the manifests in this project are not intended to provide configuration
 optionality for different use-cases and applications.  The only optionalities
 available in this repo are for different infra providers.
 
