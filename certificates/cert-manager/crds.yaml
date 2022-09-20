@@ -7,6 +7,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: cert-manager.io
   names:
@@ -205,6 +209,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: cert-manager.io
   names:
@@ -576,6 +584,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: acme.cert-manager.io
   names:
@@ -1621,6 +1633,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: cert-manager.io
   names:
@@ -2881,6 +2897,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: cert-manager.io
   names:
@@ -4141,6 +4161,10 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/part-of: cert-manager
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 spec:
   group: acme.cert-manager.io
   names:

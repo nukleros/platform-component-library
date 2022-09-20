@@ -1,5 +1,15 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "add kubernetes and nukleros labels"
+    query: "metadata"
+    value:
+      labels:
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
+
 yamlFiles:
   - name: "cert-manager rbac"
     path: "../../vendor/cert-manager.yaml"
@@ -21,3 +31,59 @@ yamlFiles:
           - metadata.namespace
           - subjects[*].namespace
         value: "{{ .namespace }}"
+
+      - name: "set controller service account labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager
+            app.kubernetes.io/instance: cert-manager
+            app.kubernetes.io/component: controller
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-issuers")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-clusterissuers")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-certificates")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-orders")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-challenges")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-ingress-shim")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-approve:cert-manager-io")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-controller-certificatesigningrequests")]
+
+      - name: "set injector service account labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-cainjector
+            app.kubernetes.io/instance: cert-manager-cainjector
+            app.kubernetes.io/component: cainjector
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector:leaderelection")]
+
+      - name: "set webhook service account labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook:subjectaccessreviews")]
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook:dynamic-serving")]
+
