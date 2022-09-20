@@ -1,5 +1,20 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "set the kubernetes and nukleros labels"
+    query: "$"
+    action: merge
+    value:
+      metadata:
+        labels:
+          app.kubernetes.io/name: external-dns
+          app.kubernetes.io/instance: external-dns
+          app.kubernetes.io/component: external-dns
+          app.kubernetes.io/version: {{ .version }}
+          app.kubernetes.io/part-of: external-dns
+          app.kubernetes.io/managed-by: platform-component-library
+          platform.nukleros.io/group: ingress
+          platform.nukleros.io/project: external-dns
+
 yamlFiles:
   - name: "external-dns service account"
     path: "../../vendor/external-dns-serviceaccount.yaml"

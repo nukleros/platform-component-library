@@ -1,4 +1,5 @@
 ---
+version: v0.12.2
 namespace: ingress-system
 replicas: 1
 resources:

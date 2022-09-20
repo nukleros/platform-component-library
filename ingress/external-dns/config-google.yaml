@@ -4,6 +4,15 @@ kind: Secret
 metadata:
   name: external-dns-google
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: external-dns-google
+    app.kubernetes.io/instance: external-dns-google
+    app.kubernetes.io/component: external-dns
+    app.kubernetes.io/version: v0.12.2
+    app.kubernetes.io/part-of: external-dns
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: external-dns
 stringData:
   EXTERNAL_DNS_TXT_OWNER_ID: external-dns-
   EXTERNAL_DNS_TXT_PREFIX: external-dns-

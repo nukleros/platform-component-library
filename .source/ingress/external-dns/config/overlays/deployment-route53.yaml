@@ -1,15 +1,22 @@
 ---
 commonOverlays:
-  - name: "inject the platform purpose label"
+  - name: "set the kubernetes and nukleros labels"
     query: "$"
     action: merge
+    onMission:
+      action: 
     value:
       metadata:
         labels:
           app: external-dns-route53
           app.kubernetes.io/name: external-dns-route53
-          app.kubernetes.io/instance: external-dns
-          platform.nukleros.io/purpose: dns-updates
+          app.kubernetes.io/instance: external-dns-route53
+          app.kubernetes.io/component: external-dns
+          app.kubernetes.io/version: {{ .version }}
+          app.kubernetes.io/part-of: external-dns
+          app.kubernetes.io/managed-by: platform-component-library
+          platform.nukleros.io/group: ingress
+          platform.nukleros.io/project: external-dns
       spec:
         selector:
           matchLabels:
@@ -19,11 +26,13 @@ commonOverlays:
             labels:
               app: external-dns-route53
               app.kubernetes.io/name: external-dns-route53
-              app.kubernetes.io/instance: external-dns
-              platform.nukleros.io/purpose: dns-updates
-    documentQuery:
-      - conditions:
-          - query: $[?($.kind == "Deployment")]
+              app.kubernetes.io/instance: external-dns-route53
+              app.kubernetes.io/component: external-dns
+              app.kubernetes.io/version: {{ .version }}
+              app.kubernetes.io/part-of: external-dns
+              app.kubernetes.io/managed-by: platform-component-library
+              platform.nukleros.io/group: ingress
+              platform.nukleros.io/project: external-dns
 
 yamlFiles:
   - name: "external-dns deployments"
