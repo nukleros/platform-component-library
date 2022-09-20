@@ -4,6 +4,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: kongclusterplugins.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:
@@ -123,6 +129,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: kongconsumers.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:
@@ -187,6 +199,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: kongingresses.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:
@@ -459,6 +477,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: kongplugins.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:
@@ -574,6 +598,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: tcpingresses.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:
@@ -722,6 +752,12 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.7.0
   name: udpingresses.configuration.konghq.com
+  labels:
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   group: configuration.konghq.com
   names:

@@ -3,12 +3,30 @@ kind: ServiceAccount
 metadata:
   name: kong-serviceaccount
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kong-leader-election
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 rules:
   - apiGroups:
       - ""
@@ -36,6 +54,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: kong-ingress
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 rules:
   - apiGroups:
       - ""
@@ -380,6 +407,15 @@ kind: RoleBinding
 metadata:
   name: kong-leader-election
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -393,6 +429,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: kong-ingress
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
