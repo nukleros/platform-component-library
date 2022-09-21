@@ -1,5 +1,5 @@
 ---
-namespace: ingress-system
+project: external-dns
 replicas: 1
 resources:
   requests:

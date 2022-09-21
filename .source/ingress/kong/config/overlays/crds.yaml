@@ -1,5 +1,13 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
 yamlFiles:
   - name: "kong custom resource definitions"
     path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"

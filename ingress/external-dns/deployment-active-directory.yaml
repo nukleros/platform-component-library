@@ -7,8 +7,9 @@ metadata:
     app: external-dns-active-directory
     app.kubernetes.io/name: external-dns-active-directory
     app.kubernetes.io/instance: external-dns
-    platform.kubernetes.io/purpose: dns-updates
-  namespace: ingress-system
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: external-dns
+  namespace: nukleros-ingress-system
 spec:
   strategy:
     type: Recreate
@@ -21,7 +22,6 @@ spec:
         app: external-dns-active-directory
         app.kubernetes.io/name: external-dns-active-directory
         app.kubernetes.io/instance: external-dns
-        platform.kubernetes.io/purpose: dns-updates
     spec:
       serviceAccountName: external-dns
       containers:

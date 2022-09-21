@@ -1,5 +1,13 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
 yamlFiles:
   - name: "kong deployments"
     path: "../../vendor/all-in-one-dbless-k4k8s-enterprise.yaml"
@@ -23,7 +31,6 @@ yamlFiles:
             namespace: "{{ .namespace }}"
             labels:
               app.kubernetes.io/name: kong-ingress
-              platform.nukleros.io/purpose: ingress
           spec:
             replicas: !!int {{ .replicas }}
             template:

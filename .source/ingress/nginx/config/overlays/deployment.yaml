@@ -1,5 +1,13 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
 yamlFiles:
   - name: "nginx deployments"
     path: "../../vendor/deployment/nginx-ingress.yaml"
@@ -27,7 +35,6 @@ yamlFiles:
           metadata:
             labels:
               app.kubernetes.io/name: nginx-ingress
-              platform.nukleros.io/purpose: ingress
 
       - name: "update pod metadata"
         query: spec.template.metadata
@@ -35,7 +42,6 @@ yamlFiles:
         value:
           labels:
             app.kubernetes.io/name: nginx-ingress
-            platform.nukleros.io/purpose: ingress
 
       - name: "ensure anit-affinity is set"
         query: spec.template.spec

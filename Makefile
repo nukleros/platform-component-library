@@ -15,7 +15,7 @@ yot:
 		chmod +x /usr/local/bin/yot
 
 #
-# automation workflows
+# developer automation workflows
 #
 GROUP ?=
 PROJECT ?=
@@ -27,6 +27,4 @@ download:
 	@GROUP=$(GROUP) PROJECT=$(PROJECT) .scripts/download.sh
 
 overlay:
-	@for OVERLAY in `ls .source/$(GROUP)/$(PROJECT)/config/overlays`; do \
-		yot -I 2 -i .source/$(GROUP)/$(PROJECT)/config/overlays/$$OVERLAY -o . -f .source/$(GROUP)/$(PROJECT)/config/values.yaml --remove-comments -s > $(GROUP)/$(PROJECT)/$$OVERLAY;\
-	done
+	@GROUP=$(GROUP) PROJECT=$(PROJECT) .scripts/overlay.sh

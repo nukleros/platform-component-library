@@ -13,7 +13,6 @@ directories:
           - deployments/**/*
         excludePaths:
           - deployments/common/crds/appprotect*
-          - deployments/common/default-server-secret.yaml
           - deployments/daemon-set/nginx-plus-ingress.yaml
           - deployments/deployment/appprotect-dos-arb.yaml
           - deployments/deployment/nginx-plus-ingress.yaml

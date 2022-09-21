@@ -1,13 +1,12 @@
 ---
 commonOverlays:
-  - name: "inject the platform purpose label"
-    query: "metadata"
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
     value:
-      labels:
-        platform.nukleros.io/purpose: certificates
-    documentQuery:
-      - conditions:
-          - query: $[?($.kind != "Deployment")]
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
 
 yamlFiles:
   - name: "cert-manager deployments"

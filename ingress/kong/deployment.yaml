@@ -3,10 +3,12 @@ kind: Deployment
 metadata:
   labels:
     app: ingress-kong
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong-ingress-controller
     app.kubernetes.io/name: kong-ingress
-    platform.kubernetes.io/purpose: ingress
+    platform.nukleros.io/purpose: ingress
   name: ingress-kong
-  namespace: ingress-system
+  namespace: nukleros-ingress-system
 spec:
   replicas: 2
   selector:
@@ -120,7 +122,7 @@ spec:
             - name: CONTROLLER_KONG_ADMIN_TLS_SKIP_VERIFY
               value: "true"
             - name: CONTROLLER_PUBLISH_SERVICE
-              value: ingress-system/kong-proxy
+              value: nukleros-ingress-system/kong-proxy
             - name: POD_NAME
               valueFrom:
                 fieldRef:

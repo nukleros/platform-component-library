@@ -1,4 +1,4 @@
 ---
-namespace: nukleros-ingress-system
+project: nginx-ingress-controller
 replicas: 2
 

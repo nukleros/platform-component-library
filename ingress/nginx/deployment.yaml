@@ -5,8 +5,9 @@ metadata:
   name: nginx-ingress
   namespace: nukleros-ingress-system
   labels:
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: nginx-ingress-controller
     app.kubernetes.io/name: nginx-ingress
-    platform.nukleros.io/purpose: ingress
 spec:
   replicas: 2
   selector:
@@ -17,7 +18,10 @@ spec:
       labels:
         app: nginx-ingress
         app.kubernetes.io/name: nginx-ingress
+<<<<<<< HEAD
         platform.nukleros.io/purpose: ingress
+=======
+>>>>>>> 9a63a13 (feat: added labels for consistency and update namespaces)
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9113"

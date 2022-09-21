@@ -1,0 +1,24 @@
+commonOverlays:
+  # TODO: this will eventually become a common overlay
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      # this implies that the 'group' variable is set
+      platform.nukleros.io/group: "{{ .group }}"
+
+      # this implies that the 'project' variable is set
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+    action: delete
+
+  - name: "remove the creation timestamp and status fields"
+    query: 
+      - metadata.creationTimestamp
+      - status
+    action: delete
