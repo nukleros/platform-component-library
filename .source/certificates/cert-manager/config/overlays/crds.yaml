@@ -1,5 +1,15 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "add kubernetes and nukleros labels"
+    query: "metadata"
+    value:
+      labels:
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
+
 yamlFiles:
   - name: "cert-manager custom resource definitions"
     path: "../../vendor/cert-manager.yaml"
@@ -11,3 +21,4 @@ yamlFiles:
         documentQuery:
           - conditions:
               - query: $[?($.kind != "CustomResourceDefinition")]
+

@@ -1,4 +1,5 @@
 ---
+version: "v1.9.1"
 namespace: certificates-system
 replicas: 2
 injector:

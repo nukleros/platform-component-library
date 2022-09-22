@@ -2,5 +2,14 @@ apiVersion: networking.k8s.io/v1
 kind: IngressClass
 metadata:
   name: kong
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   controller: ingress-controllers.konghq.com/kong

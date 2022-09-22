@@ -1,5 +1,15 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "add kubernetes and nukleros labels"
+    query: "metadata"
+    value:
+      labels:
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
+
 yamlFiles:
   - name: "cert-manager services"
     path: "../../vendor/cert-manager.yaml"
@@ -15,3 +25,26 @@ yamlFiles:
       - name: "ensure namespace is updated"
         query: metadata.namespace
         value: "{{ .namespace }}"
+
+      - name: "set webhook service labes"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "set webhook service label selectors"
+        query: "spec"
+        value:
+          selector:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+

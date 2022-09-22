@@ -25,3 +25,17 @@ yamlFiles:
       - name: "ensure creation timestamp is missing"
         query: metadata.creationTimestamp
         action: delete
+
+      - name: "add kubernetes and nukleros labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: ingress-kong
+            app.kubernetes.io/instance: ingress-kong
+            app.kubernetes.io/component: ingress-kong
+            app.kubernetes.io/version: {{ .version }}
+            app.kubernetes.io/part-of: kong-ingress-controller
+            app.kubernetes.io/managed-by: platform-component-library
+            platform.nukleros.io/group: ingress
+            platform.nukleros.io/project: kong
+

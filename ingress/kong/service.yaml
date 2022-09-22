@@ -6,6 +6,15 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
   name: kong-proxy
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   ports:
     - name: proxy
@@ -25,6 +34,15 @@ kind: Service
 metadata:
   name: kong-validation-webhook
   namespace: ingress-system
+  labels:
+    app.kubernetes.io/name: ingress-kong
+    app.kubernetes.io/instance: ingress-kong
+    app.kubernetes.io/component: ingress-kong
+    app.kubernetes.io/version: 2.5.0
+    app.kubernetes.io/part-of: kong-ingress-controller
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: kong
 spec:
   ports:
     - name: webhook

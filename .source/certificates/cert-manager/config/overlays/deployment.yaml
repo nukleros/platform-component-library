@@ -1,13 +1,24 @@
 ---
 commonOverlays:
-  - name: "inject the platform purpose label"
+  - name: "add kubernetes and nukleros labels on deployments"
     query: "metadata"
     value:
       labels:
-        platform.nukleros.io/purpose: certificates
-    documentQuery:
-      - conditions:
-          - query: $[?($.kind != "Deployment")]
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
+
+  - name: "add kubernetes and nukleros labels on pods"
+    query: "spec.template.metadata"
+    value:
+      labels:
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
 
 yamlFiles:
   - name: "cert-manager deployments"
@@ -74,7 +85,40 @@ yamlFiles:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager")]
 
-      - name: "ensure controller affinity is set"
+      - name: "set controller deployment labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager
+            app.kubernetes.io/instance: cert-manager
+            app.kubernetes.io/component: controller
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+
+      - name: "set controller label selectors"
+        query: "spec.selector"
+        value:
+          matchLabels:
+            app.kubernetes.io/name: cert-manager
+            app.kubernetes.io/instance: cert-manager
+            app.kubernetes.io/component: controller
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+
+      - name: "set controller pod labels"
+        query: "spec.template.metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager
+            app.kubernetes.io/instance: cert-manager
+            app.kubernetes.io/component: controller
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager")]
+
+      - name: "ensure controller anti affinity is set"
         query: spec.template.spec
         action: merge
         value:
@@ -110,7 +154,40 @@ yamlFiles:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager-cainjector")]
 
-      - name: "ensure injector affinity is set"
+      - name: "set injector deployment labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-cainjector
+            app.kubernetes.io/instance: cert-manager-cainjector
+            app.kubernetes.io/component: cainjector
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+
+      - name: "set injector label selectors"
+        query: "spec.selector"
+        value:
+          matchLabels:
+            app.kubernetes.io/name: cert-manager-cainjector
+            app.kubernetes.io/instance: cert-manager-cainjector
+            app.kubernetes.io/component: cainjector
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+
+      - name: "set injector pod labels"
+        query: "spec.template.metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-cainjector
+            app.kubernetes.io/instance: cert-manager-cainjector
+            app.kubernetes.io/component: cainjector
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-cainjector")]
+
+      - name: "ensure injector anti affinity is set"
         query: spec.template.spec
         action: merge
         value:
@@ -146,7 +223,40 @@ yamlFiles:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager-webhook")]
 
-      - name: "ensure webhook affinity is set"
+      - name: "set webhook deployment labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "set webhook label selectors"
+        query: "spec.selector"
+        value:
+          matchLabels:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "set webhook pod labels"
+        query: "spec.template.metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: cert-manager-webhook
+            app.kubernetes.io/instance: cert-manager-webhook
+            app.kubernetes.io/component: webhook
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "cert-manager-webhook")]
+
+      - name: "ensure webhook anti affinity is set"
         query: spec.template.spec
         action: merge
         value:
@@ -161,9 +271,10 @@ yamlFiles:
                         - key: app.kubernetes.io/name
                           operator: In
                           values:
-                            - cert-manager-cainjector
+                            - cert-manager-webhook
           nodeSelector:
             kubernetes.io/os: linux
         documentQuery:
           - conditions:
               - query: $[?($.metadata.name == "cert-manager-webhook")]
+

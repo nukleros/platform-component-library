@@ -21,9 +21,6 @@ yamlFiles:
         value:
           metadata:
             namespace: "{{ .namespace }}"
-            labels:
-              app.kubernetes.io/name: kong-ingress
-              platform.nukleros.io/purpose: ingress
           spec:
             replicas: !!int {{ .replicas }}
             template:
@@ -124,3 +121,30 @@ yamlFiles:
       - name: "ensure we are not using image pull secrets"
         query: spec.template.spec.imagePullSecrets
         action: delete
+
+      - name: "add kubernetes and nukleros labels"
+        query: "metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: ingress-kong
+            app.kubernetes.io/instance: ingress-kong
+            app.kubernetes.io/component: ingress-kong
+            app.kubernetes.io/version: {{ .version }}
+            app.kubernetes.io/part-of: kong-ingress-controller
+            app.kubernetes.io/managed-by: platform-component-library
+            platform.nukleros.io/group: ingress
+            platform.nukleros.io/project: kong
+
+      - name: "set pod labels"
+        query: "spec.template.metadata"
+        value:
+          labels:
+            app.kubernetes.io/name: ingress-kong
+            app.kubernetes.io/instance: ingress-kong
+            app.kubernetes.io/component: ingress-kong
+            app.kubernetes.io/version: {{ .version }}
+            app.kubernetes.io/part-of: kong-ingress-controller
+            app.kubernetes.io/managed-by: platform-component-library
+            platform.nukleros.io/group: ingress
+            platform.nukleros.io/project: kong
+

@@ -1,5 +1,18 @@
 ---
-commonOverlays: []
+commonOverlays:
+  - name: "add kubernetes and nukleros labels"
+    query: "metadata"
+    value:
+      labels:
+        app.kubernetes.io/name: cert-manager-webhook
+        app.kubernetes.io/instance: cert-manager-webhook
+        app.kubernetes.io/component: webhook
+        app.kubernetes.io/version: {{ .version }}
+        app.kubernetes.io/part-of: cert-manager
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: certificates
+        platform.nukleros.io/project: cert-manager
+
 yamlFiles:
   - name: "cert-manager webhooks"
     path: "../../vendor/cert-manager.yaml"
@@ -22,3 +35,4 @@ yamlFiles:
       - name: "ensure webhook annotation with appropriate namespace is updated"
         query: metadata.annotations['cert-manager.io/inject-ca-from-secret']
         value: "{{ .namespace }}/cert-manager-webhook-ca"
+

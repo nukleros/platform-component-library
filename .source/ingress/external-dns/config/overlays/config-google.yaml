@@ -10,3 +10,19 @@ yamlFiles:
         value: "{{ .namespace }}"
         onMissing:
           action: inject
+
+      - name: "add kubernetes and nukleros labels"
+        query: metadata
+        onMissing:
+          action: inject
+        value:
+          labels:
+            app.kubernetes.io/name: external-dns-google
+            app.kubernetes.io/instance: external-dns-google
+            app.kubernetes.io/component: external-dns
+            app.kubernetes.io/version: {{ .version }}
+            app.kubernetes.io/part-of: external-dns
+            app.kubernetes.io/managed-by: platform-component-library
+            platform.nukleros.io/group: ingress
+            platform.nukleros.io/project: external-dns
+

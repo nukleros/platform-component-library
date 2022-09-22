@@ -6,8 +6,13 @@ metadata:
   labels:
     app: external-dns-active-directory
     app.kubernetes.io/name: external-dns-active-directory
-    app.kubernetes.io/instance: external-dns
-    platform.kubernetes.io/purpose: dns-updates
+    app.kubernetes.io/instance: external-dns-active-directory
+    app.kubernetes.io/component: external-dns
+    app.kubernetes.io/version: v0.12.2
+    app.kubernetes.io/part-of: external-dns
+    app.kubernetes.io/managed-by: platform-component-library
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: external-dns
   namespace: ingress-system
 spec:
   strategy:
@@ -20,8 +25,13 @@ spec:
       labels:
         app: external-dns-active-directory
         app.kubernetes.io/name: external-dns-active-directory
-        app.kubernetes.io/instance: external-dns
-        platform.kubernetes.io/purpose: dns-updates
+        app.kubernetes.io/instance: external-dns-active-directory
+        app.kubernetes.io/component: external-dns
+        app.kubernetes.io/version: v0.12.2
+        app.kubernetes.io/part-of: external-dns
+        app.kubernetes.io/managed-by: platform-component-library
+        platform.nukleros.io/group: ingress
+        platform.nukleros.io/project: external-dns
     spec:
       serviceAccountName: external-dns
       containers:
