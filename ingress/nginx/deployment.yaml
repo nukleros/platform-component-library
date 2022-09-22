@@ -3,10 +3,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nginx-ingress
-  namespace: ingress-system
+  namespace: nukleros-ingress-system
   labels:
     app.kubernetes.io/name: nginx-ingress
-    platform.kubernetes.io/purpose: ingress
+    platform.nukleros.io/purpose: ingress
 spec:
   replicas: 2
   selector:
@@ -17,7 +17,7 @@ spec:
       labels:
         app: nginx-ingress
         app.kubernetes.io/name: nginx-ingress
-        platform.kubernetes.io/purpose: ingress
+        platform.nukleros.io/purpose: ingress
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9113"

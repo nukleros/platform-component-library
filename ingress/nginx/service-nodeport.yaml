@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-ingress
-  namespace: ingress-system
+  name: nginx-ingress-nodeport
+  namespace: nukleros-ingress-system
 spec:
   type: NodePort
   ports:
