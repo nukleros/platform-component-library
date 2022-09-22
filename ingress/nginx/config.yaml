@@ -3,5 +3,5 @@ kind: ConfigMap
 apiVersion: v1
 metadata:
   name: nginx-config
-  namespace: ingress-system
+  namespace: nukleros-ingress-system
 data:

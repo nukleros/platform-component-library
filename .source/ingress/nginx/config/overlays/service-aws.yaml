@@ -9,3 +9,7 @@ yamlFiles:
         query: metadata.namespace
         value: "{{ .namespace }}"
 
+      - name: "set unique name"
+        query: metadata.name
+        value: nginx-ingress-aws
+
