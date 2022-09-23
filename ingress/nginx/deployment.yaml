@@ -17,6 +17,8 @@ spec:
     metadata:
       labels:
         app: nginx-ingress
+        platform.nukleros.io/group: ingress
+        platform.nukleros.io/project: nginx-ingress-controller
         app.kubernetes.io/name: nginx-ingress
 <<<<<<< HEAD
         platform.nukleros.io/purpose: ingress

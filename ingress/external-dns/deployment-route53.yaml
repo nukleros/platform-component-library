@@ -22,6 +22,8 @@ spec:
         app: external-dns-route53
         app.kubernetes.io/name: external-dns-route53
         app.kubernetes.io/instance: external-dns
+        platform.nukleros.io/group: ingress
+        platform.nukleros.io/project: external-dns
     spec:
       serviceAccountName: external-dns
       containers:

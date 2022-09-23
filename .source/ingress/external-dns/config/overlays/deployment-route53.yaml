@@ -31,6 +31,14 @@ commonOverlays:
     onMissing:
       action: inject
 
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
 yamlFiles:
   - name: "external-dns deployments"
     path: "../../vendor/external-dns-deployment.yaml"

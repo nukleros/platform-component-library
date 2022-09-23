@@ -4,6 +4,9 @@ kind: Service
 metadata:
   name: nginx-ingress-gcp-azure
   namespace: nukleros-ingress-system
+  labels:
+    platform.nukleros.io/group: ingress
+    platform.nukleros.io/project: nginx-ingress-controller
 spec:
   externalTrafficPolicy: Local
   type: LoadBalancer

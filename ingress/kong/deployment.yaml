@@ -6,7 +6,6 @@ metadata:
     platform.nukleros.io/group: ingress
     platform.nukleros.io/project: kong-ingress-controller
     app.kubernetes.io/name: kong-ingress
-    platform.nukleros.io/purpose: ingress
   name: ingress-kong
   namespace: nukleros-ingress-system
 spec:
@@ -22,6 +21,8 @@ spec:
         traffic.sidecar.istio.io/includeInboundPorts: ""
       labels:
         app: ingress-kong
+        platform.nukleros.io/group: ingress
+        platform.nukleros.io/project: kong-ingress-controller
     spec:
       automountServiceAccountToken: false
       containers:
