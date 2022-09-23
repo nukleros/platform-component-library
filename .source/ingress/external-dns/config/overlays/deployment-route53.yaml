@@ -9,7 +9,6 @@ commonOverlays:
           app: external-dns-route53
           app.kubernetes.io/name: external-dns-route53
           app.kubernetes.io/instance: external-dns
-          platform.nukleros.io/purpose: dns-updates
       spec:
         selector:
           matchLabels:
@@ -20,10 +19,25 @@ commonOverlays:
               app: external-dns-route53
               app.kubernetes.io/name: external-dns-route53
               app.kubernetes.io/instance: external-dns
-              platform.nukleros.io/purpose: dns-updates
     documentQuery:
       - conditions:
           - query: $[?($.kind == "Deployment")]
+
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
 
 yamlFiles:
   - name: "external-dns deployments"

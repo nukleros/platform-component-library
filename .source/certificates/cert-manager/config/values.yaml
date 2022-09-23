@@ -1,5 +1,5 @@
 ---
-namespace: certificates-system
+project: cert-manager
 replicas: 2
 injector:
   resources:

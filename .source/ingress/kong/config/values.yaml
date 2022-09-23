@@ -1,5 +1,5 @@
 ---
-namespace: ingress-system
+project: kong-ingress-controller
 replicas: 2
 resources:
   requests:

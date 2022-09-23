@@ -3,39 +3,45 @@ kind: ServiceAccount
 automountServiceAccountToken: true
 metadata:
   name: cert-manager-cainjector
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cainjector
     app.kubernetes.io/name: cainjector
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 ---
 apiVersion: v1
 kind: ServiceAccount
 automountServiceAccountToken: true
 metadata:
   name: cert-manager
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cert-manager
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 ---
 apiVersion: v1
 kind: ServiceAccount
 automountServiceAccountToken: true
 metadata:
   name: cert-manager-webhook
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: webhook
     app.kubernetes.io/name: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -47,6 +53,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -112,6 +120,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -158,6 +168,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -204,6 +216,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -273,6 +287,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - acme.cert-manager.io
@@ -339,6 +355,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - acme.cert-manager.io
@@ -444,6 +462,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -516,6 +536,8 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -549,6 +571,8 @@ metadata:
     app.kubernetes.io/version: v1.9.1
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -590,6 +614,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - cert-manager.io
@@ -611,6 +637,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - certificates.k8s.io
@@ -654,6 +682,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - authorization.k8s.io
@@ -672,13 +702,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-cainjector
 subjects:
   - name: cert-manager-cainjector
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -691,13 +723,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-issuers
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -710,13 +744,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-clusterissuers
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -729,13 +765,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-certificates
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -748,13 +786,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-orders
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -767,13 +807,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-challenges
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -786,13 +828,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-ingress-shim
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -805,13 +849,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-approve:cert-manager-io
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -824,13 +870,15 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: cert-manager-controller-certificatesigningrequests
 subjects:
   - name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
     kind: ServiceAccount
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -843,6 +891,8 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -851,19 +901,21 @@ subjects:
   - apiGroup: ""
     kind: ServiceAccount
     name: cert-manager-webhook
-    namespace: certificates-system
+    namespace: nukleros-certs-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cert-manager-cainjector:leaderelection
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cainjector
     app.kubernetes.io/name: cainjector
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - coordination.k8s.io
@@ -887,13 +939,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cert-manager:leaderelection
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cert-manager
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - coordination.k8s.io
@@ -916,13 +970,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: cert-manager-webhook:dynamic-serving
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: webhook
     app.kubernetes.io/name: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
       - ""
@@ -946,13 +1002,15 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: cert-manager-cainjector:leaderelection
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cainjector
     app.kubernetes.io/name: cainjector
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -960,19 +1018,21 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: cert-manager-cainjector
-    namespace: certificates-system
+    namespace: nukleros-certs-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: cert-manager:leaderelection
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: cert-manager
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -981,19 +1041,21 @@ subjects:
   - apiGroup: ""
     kind: ServiceAccount
     name: cert-manager
-    namespace: certificates-system
+    namespace: nukleros-certs-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: cert-manager-webhook:dynamic-serving
-  namespace: certificates-system
+  namespace: nukleros-certs-system
   labels:
     app: webhook
     app.kubernetes.io/name: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
+    platform.nukleros.io/group: certificates
+    platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -1002,4 +1064,4 @@ subjects:
   - apiGroup: ""
     kind: ServiceAccount
     name: cert-manager-webhook
-    namespace: certificates-system
+    namespace: nukleros-certs-system
