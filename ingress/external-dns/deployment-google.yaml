@@ -7,7 +7,7 @@ metadata:
     app: external-dns-google
     app.kubernetes.io/name: external-dns-google
     app.kubernetes.io/instance: external-dns
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: external-dns
   namespace: nukleros-ingress-system
 spec:
@@ -22,7 +22,7 @@ spec:
         app: external-dns-google
         app.kubernetes.io/name: external-dns-google
         app.kubernetes.io/instance: external-dns
-        platform.nukleros.io/group: ingress
+        platform.nukleros.io/category: ingress
         platform.nukleros.io/project: external-dns
     spec:
       serviceAccountName: external-dns

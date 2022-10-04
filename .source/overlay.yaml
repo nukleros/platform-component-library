@@ -3,8 +3,8 @@ commonOverlays:
   - name: "apply nukleros labels"
     query: "metadata.labels"
     value:
-      # this implies that the 'group' variable is set
-      platform.nukleros.io/group: "{{ .group }}"
+      # this implies that the 'category' variable is set
+      platform.nukleros.io/category: "{{ .category }}"
 
       # this implies that the 'project' variable is set
       platform.nukleros.io/project: "{{ .project }}"

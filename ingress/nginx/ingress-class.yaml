@@ -4,7 +4,7 @@ kind: IngressClass
 metadata:
   name: nginx
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: nginx-ingress-controller
 spec:
   controller: nginx.org/ingress-controller

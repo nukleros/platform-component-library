@@ -5,14 +5,14 @@ set -e
 # DESCRIPTION: performs the overlaying a set of manifests.  this is a simply script for now, but may
 #              grow over time so we will keep logic out of the Makefile
 # INPUTS:
-#   GROUP:   the group classification, from the parent directory in .source (e.g. certificates, ingress)
-#   PROJECT: the project, within the GROUP, to overlay
+#   CATEGORY: the category of components, from the parent directory in .source (e.g. certificates, ingress)
+#   PROJECT: the project, within the CATEGORY, to overlay
 #
 # USAGE:
-#   GROUP=secrets PROJECT=external-secrets scripts/overlay.sh
+#   CATEGORY=secrets PROJECT=external-secrets scripts/overlay.sh
 
 # validate the environment
-: ${GROUP?missing environment variable GROUP}
+: ${CATEGORY?missing environment variable CATEGORY}
 : ${PROJECT?missing environment variable PROJECT}
 
 if [ -z `which yot` ]; then
@@ -20,12 +20,12 @@ if [ -z `which yot` ]; then
     exit 1
 fi
 
-GROUP_DIR=".source/${GROUP}"
-PROJECT_DIR="${GROUP_DIR}/${PROJECT}"
+CATEGORY_DIR=".source/${CATEGORY}"
+PROJECT_DIR="${CATEGORY_DIR}/${PROJECT}"
 
-# ensure group values exist
-if [ ! -f ${GROUP_DIR}/values.yaml ]; then
-    echo "missing group-specific values file at ${GROUP_DIR}/values.yaml..."
+# ensure category values exist
+if [ ! -f ${CATEGORY_DIR}/values.yaml ]; then
+    echo "missing category-specific values file at ${CATEGORY_DIR}/values.yaml..."
     exit 1
 fi
 
@@ -41,9 +41,9 @@ for OVERLAY in `ls ${PROJECT_DIR}/config/overlays`; do \
         --instructions=${PROJECT_DIR}/config/overlays/${OVERLAY} \
         --output-directory=. \
         --values-file=${PROJECT_DIR}/config/values.yaml \
-        --values-file=${GROUP_DIR}/values.yaml \
+        --values-file=${CATEGORY_DIR}/values.yaml \
         --remove-comments \
-        --stdout > ${GROUP}/${PROJECT}/${OVERLAY}
+        --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
     
     # TODO: remove duplication in overlays for nukleros labels
     # run the stdout through our common overlays
@@ -51,7 +51,7 @@ for OVERLAY in `ls ${PROJECT_DIR}/config/overlays`; do \
     #    --path=- \
     #    --instructions=.source/overlay.yaml \
     #    --values-file=${PROJECT_DIR}/config/values.yaml \
-    #    --values-file=${GROUP_DIR}/values.yaml \
+    #    --values-file=${CATEGORY_DIR}/values.yaml \
     #    --remove-comments \
-    #    --stdout > ${GROUP}/${PROJECT}/${OVERLAY}
+    #    --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
 done

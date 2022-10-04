@@ -7,7 +7,7 @@ metadata:
   name: kong-proxy
   namespace: nukleros-ingress-system
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: kong-ingress-controller
 spec:
   ports:
@@ -29,7 +29,7 @@ metadata:
   name: kong-validation-webhook
   namespace: nukleros-ingress-system
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: kong-ingress-controller
 spec:
   ports:

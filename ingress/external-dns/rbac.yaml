@@ -1,10 +1,26 @@
 ---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: external-dns-viewer
+  labels:
+    platform.nukleros.io/category: ingress
+    platform.nukleros.io/project: external-dns
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: external-dns
+subjects:
+  - kind: ServiceAccount
+    name: external-dns
+    namespace: nukleros-ingress-system
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: external-dns
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: external-dns
   namespace: nukleros-ingress-system
 ---
@@ -13,7 +29,7 @@ kind: ClusterRole
 metadata:
   name: external-dns
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: external-dns
   namespace: nukleros-ingress-system
 rules:
@@ -50,19 +66,3 @@ rules:
     verbs:
       - watch
       - list
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: external-dns-viewer
-  labels:
-    platform.nukleros.io/group: ingress
-    platform.nukleros.io/project: external-dns
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: external-dns
-subjects:
-  - kind: ServiceAccount
-    name: external-dns
-    namespace: nukleros-ingress-system

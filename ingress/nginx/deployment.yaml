@@ -5,7 +5,7 @@ metadata:
   name: nginx-ingress
   namespace: nukleros-ingress-system
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: nginx-ingress-controller
     app.kubernetes.io/name: nginx-ingress
 spec:
@@ -17,7 +17,7 @@ spec:
     metadata:
       labels:
         app: nginx-ingress
-        platform.nukleros.io/group: ingress
+        platform.nukleros.io/category: ingress
         platform.nukleros.io/project: nginx-ingress-controller
         app.kubernetes.io/name: nginx-ingress
       annotations:
