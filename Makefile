@@ -17,14 +17,14 @@ yot:
 #
 # developer automation workflows
 #
-GROUP ?=
+CATEGORY ?=
 PROJECT ?=
 project:
-	@mkdir -p .source/$(GROUP)/$(PROJECT)/config/overlays .source/$(GROUP)/$(PROJECT)/static .source/$(GROUP)/$(PROJECT)/vendor $(GROUP)/$(PROJECT)
-	@touch .source/$(GROUP)/$(PROJECT)/config/vendor.yaml .source/$(GROUP)/$(PROJECT)/config/values.yaml
+	@mkdir -p .source/$(CATEGORY)/$(PROJECT)/config/overlays .source/$(CATEGORY)/$(PROJECT)/static .source/$(CATEGORY)/$(PROJECT)/vendor $(CATEGORY)/$(PROJECT)
+	@touch .source/$(CATEGORY)/$(PROJECT)/config/vendor.yaml .source/$(CATEGORY)/$(PROJECT)/config/values.yaml
 
 download:
-	@GROUP=$(GROUP) PROJECT=$(PROJECT) .scripts/download.sh
+	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/download.sh
 
 overlay:
-	@GROUP=$(GROUP) PROJECT=$(PROJECT) .scripts/overlay.sh
+	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/overlay.sh

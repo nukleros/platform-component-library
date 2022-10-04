@@ -5,6 +5,6 @@ metadata:
   name: nginx-config
   namespace: nukleros-ingress-system
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: nginx-ingress-controller
 data:

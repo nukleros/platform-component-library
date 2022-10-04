@@ -5,7 +5,7 @@ metadata:
   name: external-dns-route53
   namespace: nukleros-ingress-system
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: external-dns
 stringData:
   EXTERNAL_DNS_TXT_OWNER_ID: external-dns-

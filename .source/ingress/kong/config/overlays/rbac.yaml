@@ -3,7 +3,7 @@ commonOverlays:
   - name: "apply nukleros labels"
     query: "metadata.labels"
     value:
-      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/category: "{{ .category }}"
       platform.nukleros.io/project: "{{ .project }}"
     onMissing:
       action: inject

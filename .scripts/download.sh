@@ -4,14 +4,14 @@ set -e
 
 # DESCRIPTION: performs the download of a set of manifests, using vendir, from an upstream
 # INPUTS:
-#   GROUP:   the group classification, from the parent directory in .source (e.g. certificates, ingress)
-#   PROJECT: the project, within the GROUP, to download
+#   CATEGORY: the category of components, from the parent directory in .source (e.g. certificates, ingress)
+#   PROJECT: the project, within the CATEGORY, to download
 #
 # USAGE:
-#   GROUP=secrets PROJECT=external-secrets scripts/download.sh
+#   CATEGORY=secrets PROJECT=external-secrets scripts/download.sh
 
 # validate the environment
-: ${GROUP?missing environment variable GROUP}
+: ${CATEGORY?missing environment variable CATEGORY}
 : ${PROJECT?missing environment variable PROJECT}
 
 if [ -z `which vendir` ]; then
@@ -19,7 +19,7 @@ if [ -z `which vendir` ]; then
     exit 1
 fi
 
-PROJECT_DIR=".source/${GROUP}/${PROJECT}"
+PROJECT_DIR=".source/${CATEGORY}/${PROJECT}"
 
 # sync the project
 # NOTE: this is meant to be run from a make target and will not work

@@ -3,7 +3,7 @@ kind: IngressClass
 metadata:
   name: kong
   labels:
-    platform.nukleros.io/group: ingress
+    platform.nukleros.io/category: ingress
     platform.nukleros.io/project: kong-ingress-controller
 spec:
   controller: ingress-controllers.konghq.com/kong

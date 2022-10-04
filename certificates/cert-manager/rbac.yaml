@@ -10,7 +10,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 ---
 apiVersion: v1
@@ -25,7 +25,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 ---
 apiVersion: v1
@@ -40,7 +40,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -53,7 +53,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -120,7 +120,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -168,7 +168,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -216,7 +216,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -287,7 +287,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -355,7 +355,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -462,7 +462,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -536,7 +536,7 @@ metadata:
     rbac.authorization.k8s.io/aggregate-to-view: "true"
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -571,7 +571,7 @@ metadata:
     app.kubernetes.io/version: v1.9.1
     rbac.authorization.k8s.io/aggregate-to-edit: "true"
     rbac.authorization.k8s.io/aggregate-to-admin: "true"
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -614,7 +614,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -637,7 +637,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -682,7 +682,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -702,7 +702,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -723,7 +723,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -744,7 +744,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -765,7 +765,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -786,7 +786,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -807,7 +807,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -828,7 +828,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -849,7 +849,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -870,7 +870,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cert-manager
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -891,7 +891,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -914,7 +914,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -946,7 +946,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -977,7 +977,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 rules:
   - apiGroups:
@@ -1009,7 +1009,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -1031,7 +1031,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -1054,7 +1054,7 @@ metadata:
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
     app.kubernetes.io/version: v1.9.1
-    platform.nukleros.io/group: certificates
+    platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 roleRef:
   apiGroup: rbac.authorization.k8s.io
