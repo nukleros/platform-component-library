@@ -1,0 +1,24 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/group: "{{ .group }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+yamlFiles:
+  - name: "nginx services"
+    path: "../../vendor/service/nodeport.yaml"
+    outputPath: "ingress/nginx/service-nodeport.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "set unique name"
+        query: metadata.name
+        value: nginx-ingress-nodeport
+
+
