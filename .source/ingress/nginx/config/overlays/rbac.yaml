@@ -1,24 +1,15 @@
 ---
 commonOverlays:
   - name: "apply nukleros labels"
-    query: "metadata.labels"
+    query: "metadata"
     value:
-      platform.nukleros.io/group: "{{ .group }}"
-      platform.nukleros.io/project: "{{ .project }}"
+      labels:
+        platform.nukleros.io/group: "{{ .group }}"
+        platform.nukleros.io/project: "{{ .project }}"
     onMissing:
       action: inject
 
 yamlFiles:
-  - name: "nginx cluster role"
-    path: "../../vendor/rbac/rbac.yaml"
-    outputPath: "ingress/nginx/rbac.yaml"
-    overlays:
-      - name: "ensure namespace is updated"
-        query:
-          - metadata.namespace
-          - subjects[*].namespace
-        value: "{{ .namespace }}"
-
   - name: "nginx service account"
     path: "../../vendor/common/ns-and-sa.yaml"
     outputPath: "ingress/nginx/rbac.yaml"
@@ -36,4 +27,13 @@ yamlFiles:
           - subjects[*].namespace
         value: "{{ .namespace }}"
 
+  - name: "nginx cluster role"
+    path: "../../vendor/rbac/rbac.yaml"
+    outputPath: "ingress/nginx/rbac.yaml"
+    overlays:
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
 
