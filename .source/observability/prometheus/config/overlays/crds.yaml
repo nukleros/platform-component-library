@@ -1,0 +1,26 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the creation timestamp"
+    query: 
+      - metadata.creationTimestamp
+    action: delete
+
+yamlFiles:
+  - name: "prometheus custom resource definitions"
+    path: "../../vendor/prometheus.yaml"
+    outputPath: "observability/prometheus/crds.yaml"
+    overlays:
+      - name: "ensure we are only acting upon crds"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "CustomResourceDefinition")]

@@ -1,0 +1,34 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+    action: delete
+
+yamlFiles:
+  - name: "prometheus config"
+    path: "../../vendor/prometheus.yaml"
+    outputPath: "observability/prometheus/config.yaml"
+    overlays:
+      - name: "ensure we are only acting upon config resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Secret")]
+              - query: $[?($.kind != "ConfigMap")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
