@@ -1,13 +1,5 @@
 ---
 commonOverlays:
-  - name: "apply nukleros labels"
-    query: "metadata.labels"
-    value:
-      platform.nukleros.io/category: "{{ .category }}"
-      platform.nukleros.io/project: "{{ .project }}"
-    onMissing:
-      action: inject
-
   - name: "remove the helm info"
     query:
       - metadata.labels["helm.sh/chart"]
@@ -32,3 +24,31 @@ yamlFiles:
           - metadata.namespace
           - subjects[*].namespace
         value: "{{ .namespace }}"
+
+    # documents: # optional and only used for multi-doc yaml files
+    #       # need to refer to their path by their index
+    #       - name: the manifest that does something
+    #       - path: 0
+    #         query: $
+    #         action: delete
+    #       - path: 1
+    #         query: $
+    #         action: delete
+    #       - path: 2
+    #         query: $
+    #         action: delete
+    #       - path: 3
+    #         query: $
+    #         action: delete
+    #       - path: 4
+    #         query: $
+    #         action: delete
+    #       - path: 5
+    #         query: $
+    #         action: delete
+    #       - path: 6
+    #         query: $
+    #         action: delete
+    #       - path: 7
+    #         query: $
+    #         action: delete

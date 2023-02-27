@@ -1,9 +1,11 @@
 apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
-  - helmChart:
-      appVersion: v0.63.0
-      version: 45.3.0
+  - git:
+      commitTitle: cut release 0.12 (#1919)...
+      sha: 0198f98f682f1d7e40b1dd5615437a916107f1aa
+      tags:
+      - v0.12.0
     path: ./
-  path: .source/observability/prometheus/vendor-helm
+  path: .source/observability/prometheus/vendor
 kind: LockConfig

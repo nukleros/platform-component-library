@@ -27,4 +27,4 @@ download:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/download.sh
 
 overlay:
-	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/overlay.sh
+	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/overlay.sh 
