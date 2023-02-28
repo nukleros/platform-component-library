@@ -54,4 +54,14 @@ for OVERLAY in `ls ${PROJECT_DIR}/config/overlays`; do \
     #    --values-file=${CATEGORY_DIR}/values.yaml \
     #    --remove-comments \
     #    --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
+
+    # find ${PROJECT_DIR}/vendor -name "*.yaml" -exec cat {} \; > ${PROJECT_DIR}/in.yaml
+    # cat ${PROJECT_DIR}/in.yaml |  yot \
+    #     --indent-level=2 \
+    #     --instructions=${PROJECT_DIR}/config/overlays/${OVERLAY} \
+    #     --output-directory=. \
+    #     --values-file=${PROJECT_DIR}/config/values.yaml \
+    #     --values-file=${CATEGORY_DIR}/values.yaml \
+    #     --remove-comments \
+    #     --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
 done
