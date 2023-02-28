@@ -8,8 +8,8 @@ commonOverlays:
 
 yamlFiles:
   - name: "prometheus config"
-    path: "../../vendor/prometheus.yaml"
-    outputPath: "observability/prometheus/config.yaml"
+    path: "../../vendor/"
+    outputPath: "observability/prometheus/"
     overlays:
       - name: "ensure we are only acting upon config resources"
         query: "$"

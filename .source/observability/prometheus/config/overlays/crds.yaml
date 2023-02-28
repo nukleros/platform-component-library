@@ -15,8 +15,8 @@ commonOverlays:
 
 yamlFiles:
   - name: "prometheus custom resource definitions"
-    path: "../../vendor/prometheus.yaml"
-    outputPath: "observability/prometheus/crds.yaml"
+    path: "../../vendor/"
+    outputPath: "observability/prometheus/"
     overlays:
       - name: "ensure we are only acting upon crds"
         query: "$"
