@@ -25,30 +25,10 @@ yamlFiles:
           - subjects[*].namespace
         value: "{{ .namespace }}"
 
-    # documents: # optional and only used for multi-doc yaml files
-    #       # need to refer to their path by their index
-    #       - name: the manifest that does something
-    #       - path: 0
-    #         query: $
-    #         action: delete
-    #       - path: 1
-    #         query: $
-    #         action: delete
-    #       - path: 2
-    #         query: $
-    #         action: delete
-    #       - path: 3
-    #         query: $
-    #         action: delete
-    #       - path: 4
-    #         query: $
-    #         action: delete
-    #       - path: 5
-    #         query: $
-    #         action: delete
-    #       - path: 6
-    #         query: $
-    #         action: delete
-    #       - path: 7
-    #         query: $
-    #         action: delete
+# There are 28 Configmaps in 4 files only following 3 are processed by yot with configuration
+    # path: "../../vendor/"
+    # outputPath: "observability/prometheus/"
+
+# name: grafana-dashboards              <-- .source/observability/prometheus/vendor/grafana-dashboardSources.yaml
+# name: adapter-config                  <-- .source/observability/prometheus/vendor/prometheusAdapter-configMap.yaml
+# name: blackbox-exporter-configuration <-- source/observability/prometheus/vendor/blackboxExporter-configuration.yaml

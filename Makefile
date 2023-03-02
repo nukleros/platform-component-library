@@ -17,8 +17,8 @@ yot:
 #
 # developer automation workflows
 #
-CATEGORY ?=
-PROJECT ?=
+CATEGORY ?=observability
+PROJECT ?=prometheus
 project:
 	@mkdir -p .source/$(CATEGORY)/$(PROJECT)/config/overlays .source/$(CATEGORY)/$(PROJECT)/static .source/$(CATEGORY)/$(PROJECT)/vendor $(CATEGORY)/$(PROJECT)
 	@touch .source/$(CATEGORY)/$(PROJECT)/config/vendor.yaml .source/$(CATEGORY)/$(PROJECT)/config/values.yaml
@@ -28,3 +28,6 @@ download:
 
 overlay:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/overlay.sh 
+
+run: download overlay
+	@echo "Done."

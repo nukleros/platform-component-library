@@ -1,6 +1,190 @@
 ---
 apiVersion: v1
 data:
+  dashboards.yaml: |-
+    {
+        "apiVersion": 1,
+        "providers": [
+            {
+                "folder": "Default",
+                "folderUid": "",
+                "name": "0",
+                "options": {
+                    "path": "/grafana-dashboard-definitions/0"
+                },
+                "orgId": 1,
+                "type": "file"
+            }
+        ]
+    }
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 9.3.2
+  name: grafana-dashboards
+  namespace: nukleros-observability-system
+---
+apiVersion: v1
+data:
+  config.yml: |-
+    "modules":
+      "http_2xx":
+        "http":
+          "preferred_ip_protocol": "ip4"
+        "prober": "http"
+      "http_post_2xx":
+        "http":
+          "method": "POST"
+          "preferred_ip_protocol": "ip4"
+        "prober": "http"
+      "irc_banner":
+        "prober": "tcp"
+        "tcp":
+          "preferred_ip_protocol": "ip4"
+          "query_response":
+          - "send": "NICK prober"
+          - "send": "USER prober prober prober :prober"
+          - "expect": "PING :([^ ]+)"
+            "send": "PONG ${1}"
+          - "expect": "^:[^ ]+ 001"
+      "pop3s_banner":
+        "prober": "tcp"
+        "tcp":
+          "preferred_ip_protocol": "ip4"
+          "query_response":
+          - "expect": "^+OK"
+          "tls": true
+          "tls_config":
+            "insecure_skip_verify": false
+      "ssh_banner":
+        "prober": "tcp"
+        "tcp":
+          "preferred_ip_protocol": "ip4"
+          "query_response":
+          - "expect": "^SSH-2.0-"
+      "tcp_connect":
+        "prober": "tcp"
+        "tcp":
+          "preferred_ip_protocol": "ip4"
+kind: ConfigMap
+metadata:
+  labels:
+    app.kubernetes.io/component: exporter
+    app.kubernetes.io/name: blackbox-exporter
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 0.23.0
+  name: blackbox-exporter-configuration
+  namespace: nukleros-observability-system
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 9.3.2
+  name: grafana-config
+  namespace: nukleros-observability-system
+stringData:
+  grafana.ini: |
+    [date_formats]
+    default_timezone = UTC
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: alert-router
+    app.kubernetes.io/instance: main
+    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 0.25.0
+  name: alertmanager-main
+  namespace: nukleros-observability-system
+stringData:
+  alertmanager.yaml: |-
+    "global":
+      "resolve_timeout": "5m"
+    "inhibit_rules":
+    - "equal":
+      - "namespace"
+      - "alertname"
+      "source_matchers":
+      - "severity = critical"
+      "target_matchers":
+      - "severity =~ warning|info"
+    - "equal":
+      - "namespace"
+      - "alertname"
+      "source_matchers":
+      - "severity = warning"
+      "target_matchers":
+      - "severity = info"
+    - "equal":
+      - "namespace"
+      "source_matchers":
+      - "alertname = InfoInhibitor"
+      "target_matchers":
+      - "severity = info"
+    "receivers":
+    - "name": "Default"
+    - "name": "Watchdog"
+    - "name": "Critical"
+    - "name": "null"
+    "route":
+      "group_by":
+      - "namespace"
+      "group_interval": "5m"
+      "group_wait": "30s"
+      "receiver": "Default"
+      "repeat_interval": "12h"
+      "routes":
+      - "matchers":
+        - "alertname = Watchdog"
+        "receiver": "Watchdog"
+      - "matchers":
+        - "alertname = InfoInhibitor"
+        "receiver": "null"
+      - "matchers":
+        - "severity = critical"
+        "receiver": "Critical"
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  labels:
+    app.kubernetes.io/component: grafana
+    app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
+    app.kubernetes.io/version: 9.3.2
+  name: grafana-datasources
+  namespace: nukleros-observability-system
+stringData:
+  datasources.yaml: |-
+    {
+        "apiVersion": 1,
+        "datasources": [
+            {
+                "access": "proxy",
+                "editable": false,
+                "name": "prometheus",
+                "orgId": 1,
+                "type": "prometheus",
+                "url": "http://prometheus-k8s.monitoring.svc:9090",
+                "version": 1
+            }
+        ]
+    }
+type: Opaque
+---
+apiVersion: v1
+data:
   config.yaml: |-
     "resourceRules":
       "cpu":
@@ -68,187 +252,3 @@ metadata:
     app.kubernetes.io/version: 0.10.0
   name: adapter-config
   namespace: nukleros-observability-system
----
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app.kubernetes.io/component: alert-router
-    app.kubernetes.io/instance: main
-    app.kubernetes.io/name: alertmanager
-    app.kubernetes.io/part-of: kube-prometheus
-    app.kubernetes.io/version: 0.25.0
-  name: alertmanager-main
-  namespace: nukleros-observability-system
-stringData:
-  alertmanager.yaml: |-
-    "global":
-      "resolve_timeout": "5m"
-    "inhibit_rules":
-    - "equal":
-      - "namespace"
-      - "alertname"
-      "source_matchers":
-      - "severity = critical"
-      "target_matchers":
-      - "severity =~ warning|info"
-    - "equal":
-      - "namespace"
-      - "alertname"
-      "source_matchers":
-      - "severity = warning"
-      "target_matchers":
-      - "severity = info"
-    - "equal":
-      - "namespace"
-      "source_matchers":
-      - "alertname = InfoInhibitor"
-      "target_matchers":
-      - "severity = info"
-    "receivers":
-    - "name": "Default"
-    - "name": "Watchdog"
-    - "name": "Critical"
-    - "name": "null"
-    "route":
-      "group_by":
-      - "namespace"
-      "group_interval": "5m"
-      "group_wait": "30s"
-      "receiver": "Default"
-      "repeat_interval": "12h"
-      "routes":
-      - "matchers":
-        - "alertname = Watchdog"
-        "receiver": "Watchdog"
-      - "matchers":
-        - "alertname = InfoInhibitor"
-        "receiver": "null"
-      - "matchers":
-        - "severity = critical"
-        "receiver": "Critical"
-type: Opaque
----
-apiVersion: v1
-data:
-  config.yml: |-
-    "modules":
-      "http_2xx":
-        "http":
-          "preferred_ip_protocol": "ip4"
-        "prober": "http"
-      "http_post_2xx":
-        "http":
-          "method": "POST"
-          "preferred_ip_protocol": "ip4"
-        "prober": "http"
-      "irc_banner":
-        "prober": "tcp"
-        "tcp":
-          "preferred_ip_protocol": "ip4"
-          "query_response":
-          - "send": "NICK prober"
-          - "send": "USER prober prober prober :prober"
-          - "expect": "PING :([^ ]+)"
-            "send": "PONG ${1}"
-          - "expect": "^:[^ ]+ 001"
-      "pop3s_banner":
-        "prober": "tcp"
-        "tcp":
-          "preferred_ip_protocol": "ip4"
-          "query_response":
-          - "expect": "^+OK"
-          "tls": true
-          "tls_config":
-            "insecure_skip_verify": false
-      "ssh_banner":
-        "prober": "tcp"
-        "tcp":
-          "preferred_ip_protocol": "ip4"
-          "query_response":
-          - "expect": "^SSH-2.0-"
-      "tcp_connect":
-        "prober": "tcp"
-        "tcp":
-          "preferred_ip_protocol": "ip4"
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/component: exporter
-    app.kubernetes.io/name: blackbox-exporter
-    app.kubernetes.io/part-of: kube-prometheus
-    app.kubernetes.io/version: 0.23.0
-  name: blackbox-exporter-configuration
-  namespace: nukleros-observability-system
----
-apiVersion: v1
-data:
-  dashboards.yaml: |-
-    {
-        "apiVersion": 1,
-        "providers": [
-            {
-                "folder": "Default",
-                "folderUid": "",
-                "name": "0",
-                "options": {
-                    "path": "/grafana-dashboard-definitions/0"
-                },
-                "orgId": 1,
-                "type": "file"
-            }
-        ]
-    }
-kind: ConfigMap
-metadata:
-  labels:
-    app.kubernetes.io/component: grafana
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: kube-prometheus
-    app.kubernetes.io/version: 9.3.2
-  name: grafana-dashboards
-  namespace: nukleros-observability-system
----
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app.kubernetes.io/component: grafana
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: kube-prometheus
-    app.kubernetes.io/version: 9.3.2
-  name: grafana-config
-  namespace: nukleros-observability-system
-stringData:
-  grafana.ini: |
-    [date_formats]
-    default_timezone = UTC
-type: Opaque
----
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app.kubernetes.io/component: grafana
-    app.kubernetes.io/name: grafana
-    app.kubernetes.io/part-of: kube-prometheus
-    app.kubernetes.io/version: 9.3.2
-  name: grafana-datasources
-  namespace: nukleros-observability-system
-stringData:
-  datasources.yaml: |-
-    {
-        "apiVersion": 1,
-        "datasources": [
-            {
-                "access": "proxy",
-                "editable": false,
-                "name": "prometheus",
-                "orgId": 1,
-                "type": "prometheus",
-                "url": "http://prometheus-k8s.monitoring.svc:9090",
-                "version": 1
-            }
-        ]
-    }
-type: Opaque
