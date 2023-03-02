@@ -1,0 +1,34 @@
+---
+commonOverlays:
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+    action: delete
+
+yamlFiles:
+  - name: "prometheus config"
+    path: "../../vendor/"
+    outputPath: "observability/prometheus/"
+    overlays:
+      - name: "ensure we are only acting upon config resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Secret")]
+              - query: $[?($.kind != "ConfigMap")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
+
+# There are 28 Configmaps in 4 files only following 3 are processed by yot with configuration
+    # path: "../../vendor/"
+    # outputPath: "observability/prometheus/"
+
+# name: grafana-dashboards              <-- .source/observability/prometheus/vendor/grafana-dashboardSources.yaml
+# name: adapter-config                  <-- .source/observability/prometheus/vendor/prometheusAdapter-configMap.yaml
+# name: blackbox-exporter-configuration <-- source/observability/prometheus/vendor/blackboxExporter-configuration.yaml

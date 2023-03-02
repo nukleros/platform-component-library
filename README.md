@@ -38,7 +38,7 @@ available in this repo are for different infra providers.
 
 ## Supported Projects
 
-Following are the currently supported groups and projects.
+Following are the currently supported categories and projects.
 
 * certificates
     * Cert Manager
@@ -57,7 +57,7 @@ First, update the version number in the URL for the cert-manager manifest in
 Then you can sync the latest manifests as follows.
 
 ```bash
-export GROUP=certificates
+export CATEGORY=certificates
 export PROJECT=cert-manager
 make download
 ```
@@ -77,15 +77,15 @@ To add a new project, first add the necessary sub-directories and files in the
 `.source` directory.
 
 ```bash
-export GROUP=<new or existing group>
+export CATEGORY=<new or existing category>
 export PROJECT=<some project>
 make project
 ```
 
 For projects with static manifests available, we use vendir to fetch manifests.
-Edit the `.source/<group>/<project>/config/vendor.yaml` and configure
+Edit the `.source/<category>/<project>/config/vendor.yaml` and configure
 vendir to fetch the upstream manifests and deposit them into the
-`.source/<group>/<project>/vendor` directory.  See other examples in this repo
+`.source/<category>/<project>/vendor` directory.  See other examples in this repo
 and refer to [vendir docs](https://carvel.dev/vendir/docs/v0.30.0/) for details.
 Download the upstream manifests.
 
