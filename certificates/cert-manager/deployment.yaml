@@ -8,7 +8,7 @@ metadata:
     app.kubernetes.io/name: cainjector
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: cainjector
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.13.0
     platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 spec:
@@ -25,19 +25,20 @@ spec:
         app.kubernetes.io/name: cainjector
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/component: cainjector
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.13.0
         platform.nukleros.io/category: certificates
         platform.nukleros.io/project: cert-manager
     spec:
       serviceAccountName: cert-manager-cainjector
+      enableServiceLinks: false
       securityContext:
         fsGroup: 1001
         runAsUser: 1001
         runAsGroup: 1001
         runAsNonRoot: true
       containers:
-        - name: cert-manager
-          image: quay.io/jetstack/cert-manager-cainjector:v1.9.1
+        - name: cert-manager-cainjector
+          image: quay.io/jetstack/cert-manager-cainjector:v1.13.0
           imagePullPolicy: IfNotPresent
           args:
             - --v=2
@@ -58,7 +59,6 @@ spec:
               cpu: 50m
               memory: 64Mi
             limits:
-              cpu: 100m
               memory: 128Mi
       nodeSelector:
         kubernetes.io/os: linux
@@ -85,7 +85,7 @@ metadata:
     app.kubernetes.io/name: cert-manager
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: controller
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.13.0
     platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 spec:
@@ -102,7 +102,7 @@ spec:
         app.kubernetes.io/name: cert-manager
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/component: controller
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.13.0
         platform.nukleros.io/category: certificates
         platform.nukleros.io/project: cert-manager
       annotations:
@@ -111,22 +111,28 @@ spec:
         prometheus.io/port: "9402"
     spec:
       serviceAccountName: cert-manager
+      enableServiceLinks: false
       securityContext:
         fsGroup: 1001
         runAsUser: 1001
         runAsGroup: 1001
         runAsNonRoot: true
       containers:
-        - name: cert-manager
-          image: quay.io/jetstack/cert-manager-controller:v1.9.1
+        - name: cert-manager-controller
+          image: quay.io/jetstack/cert-manager-controller:v1.13.0
           imagePullPolicy: IfNotPresent
           args:
             - --v=2
             - --cluster-resource-namespace=$(POD_NAMESPACE)
             - --leader-election-namespace=$(POD_NAMESPACE)
+            - --acme-http01-solver-image=quay.io/jetstack/cert-manager-acmesolver:v1.13.0
+            - --max-concurrent-challenges=60
           ports:
             - containerPort: 9402
               name: http-metrics
+              protocol: TCP
+            - containerPort: 9403
+              name: http-healthz
               protocol: TCP
           securityContext:
             allowPrivilegeEscalation: false
@@ -144,7 +150,6 @@ spec:
               cpu: 25m
               memory: 32Mi
             limits:
-              cpu: 50m
               memory: 64Mi
       nodeSelector:
         kubernetes.io/os: linux
@@ -171,7 +176,7 @@ metadata:
     app.kubernetes.io/name: webhook
     app.kubernetes.io/instance: cert-manager
     app.kubernetes.io/component: webhook
-    app.kubernetes.io/version: v1.9.1
+    app.kubernetes.io/version: v1.13.0
     platform.nukleros.io/category: certificates
     platform.nukleros.io/project: cert-manager
 spec:
@@ -188,30 +193,36 @@ spec:
         app.kubernetes.io/name: webhook
         app.kubernetes.io/instance: cert-manager
         app.kubernetes.io/component: webhook
-        app.kubernetes.io/version: v1.9.1
+        app.kubernetes.io/version: v1.13.0
         platform.nukleros.io/category: certificates
         platform.nukleros.io/project: cert-manager
     spec:
       serviceAccountName: cert-manager-webhook
+      enableServiceLinks: false
       securityContext:
         fsGroup: 1001
         runAsUser: 1001
         runAsGroup: 1001
         runAsNonRoot: true
       containers:
-        - name: cert-manager
-          image: quay.io/jetstack/cert-manager-webhook:v1.9.1
+        - name: cert-manager-webhook
+          image: quay.io/jetstack/cert-manager-webhook:v1.13.0
           imagePullPolicy: IfNotPresent
           args:
             - --v=2
             - --secure-port=10250
             - --dynamic-serving-ca-secret-namespace=$(POD_NAMESPACE)
             - --dynamic-serving-ca-secret-name=cert-manager-webhook-ca
-            - --dynamic-serving-dns-names=cert-manager-webhook,cert-manager-webhook.$(POD_NAMESPACE),cert-manager-webhook.$(POD_NAMESPACE).svc
+            - --dynamic-serving-dns-names=cert-manager-webhook
+            - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE)
+            - --dynamic-serving-dns-names=cert-manager-webhook.$(POD_NAMESPACE).svc
           ports:
             - name: https
               protocol: TCP
               containerPort: 10250
+            - name: healthcheck
+              protocol: TCP
+              containerPort: 6080
           livenessProbe:
             httpGet:
               path: /livez
@@ -248,7 +259,6 @@ spec:
               cpu: 25m
               memory: 32Mi
             limits:
-              cpu: 50m
               memory: 64Mi
       nodeSelector:
         kubernetes.io/os: linux
