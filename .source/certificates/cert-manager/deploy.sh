@@ -1,0 +1,1 @@
+kubectl apply -f certificates/cert-manager/
