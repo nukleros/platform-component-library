@@ -40,13 +40,6 @@ yamlFiles:
         query: spec.template.spec.containers[*].args[?(@ =~ /^--leader-election-namespace/)]
         value: --leader-election-namespace=$(POD_NAMESPACE)
 
-      - name: "ensure namespace for dns names is updated"
-        query: spec.template.spec.containers[0].args[?(@ =~ /^--dynamic-serving-dns-names=/)]
-        value: "--dynamic-serving-dns-names=cert-manager-webhook,cert-manager-webhook.$(POD_NAMESPACE),cert-manager-webhook.$(POD_NAMESPACE).svc"
-        documentQuery:
-          - conditions:
-              - query: $[?($.metadata.name == "cert-manager-webhook")]
-
       - name: "ensure pod security context is updated"
         query: spec.template.spec.securityContext
         action: replace
@@ -75,7 +68,6 @@ yamlFiles:
               cpu: "{{ .controller.resources.requests.cpu }}"
               memory: "{{ .controller.resources.requests.memory }}"
             limits:
-              cpu: "{{ .controller.resources.limits.cpu }}"
               memory: "{{ .controller.resources.limits.memory }}"
         documentQuery:
           - conditions:
@@ -111,7 +103,6 @@ yamlFiles:
               cpu: "{{ .injector.resources.requests.cpu }}"
               memory: "{{ .injector.resources.requests.memory }}"
             limits:
-              cpu: "{{ .injector.resources.limits.cpu }}"
               memory: "{{ .injector.resources.limits.memory }}"
         documentQuery:
           - conditions:
@@ -147,7 +138,6 @@ yamlFiles:
               cpu: "{{ .webhook.resources.requests.cpu }}"
               memory: "{{ .webhook.resources.requests.memory }}"
             limits:
-              cpu: "{{ .webhook.resources.limits.cpu }}"
               memory: "{{ .webhook.resources.limits.memory }}"
         documentQuery:
           - conditions:

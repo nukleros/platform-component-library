@@ -7,4 +7,4 @@ directories:
     contents:
       - path: ./
         http:
-          url: https://github.com/cert-manager/cert-manager/releases/download/v1.9.1/cert-manager.yaml
+          url: https://github.com/cert-manager/cert-manager/releases/download/v1.13.0/cert-manager.yaml
