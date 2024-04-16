@@ -2,6 +2,6 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - http: {}
-    path: ./
+    path: .
   path: .source/certificates/cert-manager/vendor
 kind: LockConfig
