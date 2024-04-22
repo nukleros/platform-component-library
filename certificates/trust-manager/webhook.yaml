@@ -1,0 +1,36 @@
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: trust-manager
+  labels:
+    app: trust-manager
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+  annotations:
+    cert-manager.io/inject-ca-from: nukleros-certs-system/trust-manager
+webhooks:
+  - name: trust.cert-manager.io
+    rules:
+      - apiGroups:
+          - trust.cert-manager.io
+        apiVersions:
+          - '*'
+        operations:
+          - CREATE
+          - UPDATE
+        resources:
+          - '*/*'
+    admissionReviewVersions:
+      - v1
+    timeoutSeconds: 5
+    failurePolicy: Fail
+    sideEffects: None
+    clientConfig:
+      service:
+        name: trust-manager
+        namespace: nukleros-certs-system
+        path: /validate-trust-cert-manager-io-v1alpha1-bundle

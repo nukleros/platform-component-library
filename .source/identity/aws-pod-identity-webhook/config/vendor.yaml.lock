@@ -1,0 +1,11 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - git:
+      commitTitle: 'Merge pull request #223 from sushanth0910/bumt-go-version...'
+      sha: f9396d44bc99950c53cf969bd8389368eeabeae2
+      tags:
+      - v0.5.3
+    path: .
+  path: .source/identity/aws-pod-identity-webhook/vendor
+kind: LockConfig

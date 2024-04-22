@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: trust-manager-metrics
+  namespace: nukleros-certs-system
+  labels:
+    app: trust-manager
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9402
+      targetPort: 9402
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/component: trust-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trust-manager
+  namespace: nukleros-certs-system
+  labels:
+    app: trust-manager
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: 6443
+      protocol: TCP
+      name: webhook
+  selector:
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/component: trust-manager

@@ -1,0 +1,139 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "set the name to prefix with aws"
+    query: metadata.name
+    value: "{{ .project }}"
+    action: replace
+
+yamlFiles:
+  - name: "aws-pod-identity-webhook deployment"
+    path: "../../vendor/deployment-base.yaml"
+    outputPath: "identity/aws-pod-identity-webhook/deployment.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployment resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure replicas are updated"
+        query: spec.replicas
+        value: !!int {{ .webhook.replicas }}
+
+      - name: "ensure container name image and port are updated"
+        query: spec.template.spec.containers[?(@.name == "pod-identity-webhook")]
+        action: merge
+        value:
+          name: "{{ .project }}"
+          image: "{{ .webhook.image }}:{{ .webhook.version }}"
+          command:
+            - --port={{ .webhook.listenPort }}
+
+      - name: "ensure container security context is updated"
+        query: spec.template.spec.containers[*].securityContext
+        action: replace
+        onMissing:
+          action: inject
+        value:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: ["ALL"]
+
+      - name: "ensure controller resources are updated"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            requests:
+              cpu: "{{ .webhook.resources.requests.cpu }}"
+              memory: "{{ .webhook.resources.requests.memory }}"
+            limits:
+              memory: "{{ .webhook.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "aws-pod-identity-webhook")]
+
+      - name: "ensure match labels is set"
+        query: spec.selector.matchLabels
+        action: replace
+        value:
+          app.kubernetes.io/name: "{{ .project }}"
+          app.kubernetes.io/instance: "{{ .project }}"
+          app.kubernetes.io/component: "{{ .project }}"
+
+      - name: "ensure pod labels are set"
+        query: spec.template.metadata.labels
+        action: merge
+        value:
+          app: "{{ .project }}"
+          app.kubernetes.io/name: "{{ .project }}"
+          app.kubernetes.io/instance: "{{ .project }}"
+          app.kubernetes.io/component: "{{ .project }}"
+
+      - name: "ensure controller affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          serviceAccountName: "{{ .project }}"
+          securityContext:
+            fsGroup: 1001
+            runAsUser: 1001
+            runAsGroup: 1001
+            runAsNonRoot: true
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - aws-pod-identity-webhook
+          nodeSelector:
+            kubernetes.io/os: linux
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "aws-pod-identity-webhook")]
+
+      - name: "ensure volume name is set"
+        query: spec.template.spec.volumes[?(@.name == "cert")].secret.secretName
+        action: replace
+        value: "{{ .project }}-cert"

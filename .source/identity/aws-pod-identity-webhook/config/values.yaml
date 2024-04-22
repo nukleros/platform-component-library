@@ -1,0 +1,13 @@
+---
+project: aws-pod-identity-webhook
+webhook:
+  image: amazon/amazon-eks-pod-identity-webhook
+  version: v0.5.3
+  replicas: 2
+  listenPort: 9443
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "32Mi"
+    limits:
+      memory: "64Mi"

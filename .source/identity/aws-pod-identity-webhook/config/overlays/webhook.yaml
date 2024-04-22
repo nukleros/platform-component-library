@@ -1,0 +1,55 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "set the name to prefix with aws"
+    query: metadata.name
+    value: "{{ .project }}"
+    action: replace
+
+yamlFiles:
+  - name: "aws-pod-identity-webhook webhooks"
+    path: "../../vendor/mutatingwebhook.yaml"
+    outputPath: "identity/aws-pod-identity-webhook/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - webhooks[*].clientConfig.service.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure webhook annotation with appropriate namespace is updated"
+        query: metadata.annotations['cert-manager.io/inject-ca-from']
+        value: "{{ .namespace }}/{{ .project }}"
+
+      - name: "ensure name is updated"
+        query:
+          - webhooks[0].clientConfig.service.name
+        value: "{{ .project }}"
