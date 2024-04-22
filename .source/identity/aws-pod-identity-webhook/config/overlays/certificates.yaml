@@ -1,0 +1,82 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "set the name to prefix with aws"
+    query: metadata.name
+    value: "{{ .project }}"
+    action: replace
+
+yamlFiles:
+  - name: "aws-pod-identity-webhook custom resource definitions"
+    path: "../../vendor/deployment-base.yaml"
+    outputPath: "identity/aws-pod-identity-webhook/certificates.yaml"
+    overlays:
+      - name: "ensure we are only acting upon certificate resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Issuer")]
+              - query: $[?($.kind != "ClusterIssuer")]
+              - query: $[?($.kind != "Certificate")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure issuer name is used correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.issuerRef.name
+        action: replace
+        value: "{{ .project }}"
+
+      - name: "ensure secret name is used correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.secretName
+        action: replace
+        value: "{{ .project }}-cert"
+
+      - name: "ensure certificate common name generated correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.commonName
+        action: replace
+        value: "aws-pod-identity-webhook.{{ .namespace }}.svc"
+
+      - name: "ensure certificate dns name generated correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.dnsNames
+        action: replace
+        value:
+          - "aws-pod-identity-webhook.{{ .namespace }}.svc"
+          - "aws-pod-identity-webhook"
+          - "aws-pod-identity-webhook.{{ .namespace }}"
+          - "aws-pod-identity-webhook.{{ .namespace }}.svc"
+          - "aws-pod-identity-webhook.{{ .namespace }}.svc.local"

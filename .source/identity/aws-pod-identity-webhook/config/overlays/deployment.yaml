@@ -30,10 +30,15 @@ commonOverlays:
       - metadata.annotations["helm.sh/resource-policy"]
     action: delete
 
+  - name: "set the name to prefix with aws"
+    query: metadata.name
+    value: "{{ .project }}"
+    action: replace
+
 yamlFiles:
-  - name: "trust-manager deployment"
-    path: "../../vendor/trust-manager.yaml"
-    outputPath: "certificates/trust-manager/deployment.yaml"
+  - name: "aws-pod-identity-webhook deployment"
+    path: "../../vendor/deployment-base.yaml"
+    outputPath: "identity/aws-pod-identity-webhook/deployment.yaml"
     overlays:
       - name: "ensure we are only acting upon deployment resources"
         query: "$"
@@ -48,11 +53,16 @@ yamlFiles:
 
       - name: "ensure replicas are updated"
         query: spec.replicas
-        value: !!int {{ .controller.replicas }}
+        value: !!int {{ .webhook.replicas }}
 
-      - name: "ensure trust namespace is updated"
-        query: spec.template.spec.containers[?(@.name == "trust-manager")].args[?(@ =~ /^--trust-namespace/)]
-        value: "--trust-namespace={{ .namespace }}"
+      - name: "ensure container name image and port are updated"
+        query: spec.template.spec.containers[?(@.name == "pod-identity-webhook")]
+        action: merge
+        value:
+          name: "{{ .project }}"
+          image: "{{ .webhook.image }}:{{ .webhook.version }}"
+          command:
+            - --port={{ .webhook.listenPort }}
 
       - name: "ensure container security context is updated"
         query: spec.template.spec.containers[*].securityContext
@@ -70,13 +80,13 @@ yamlFiles:
         value:
           resources:
             requests:
-              cpu: "{{ .controller.resources.requests.cpu }}"
-              memory: "{{ .controller.resources.requests.memory }}"
+              cpu: "{{ .webhook.resources.requests.cpu }}"
+              memory: "{{ .webhook.resources.requests.memory }}"
             limits:
-              memory: "{{ .controller.resources.limits.memory }}"
+              memory: "{{ .webhook.resources.limits.memory }}"
         documentQuery:
           - conditions:
-              - query: $[?($.metadata.name == "trust-manager")]
+              - query: $[?($.metadata.name == "aws-pod-identity-webhook")]
 
       - name: "ensure match labels is set"
         query: spec.selector.matchLabels
@@ -86,10 +96,20 @@ yamlFiles:
           app.kubernetes.io/instance: "{{ .project }}"
           app.kubernetes.io/component: "{{ .project }}"
 
+      - name: "ensure pod labels are set"
+        query: spec.template.metadata.labels
+        action: merge
+        value:
+          app: "{{ .project }}"
+          app.kubernetes.io/name: "{{ .project }}"
+          app.kubernetes.io/instance: "{{ .project }}"
+          app.kubernetes.io/component: "{{ .project }}"
+
       - name: "ensure controller affinity is set"
         query: spec.template.spec
         action: merge
         value:
+          serviceAccountName: "{{ .project }}"
           securityContext:
             fsGroup: 1001
             runAsUser: 1001
@@ -106,9 +126,14 @@ yamlFiles:
                         - key: app.kubernetes.io/name
                           operator: In
                           values:
-                            - trust-manager
+                            - aws-pod-identity-webhook
           nodeSelector:
             kubernetes.io/os: linux
         documentQuery:
           - conditions:
-              - query: $[?($.metadata.name == "trust-manager")]
+              - query: $[?($.metadata.name == "aws-pod-identity-webhook")]
+
+      - name: "ensure volume name is set"
+        query: spec.template.spec.volumes[?(@.name == "cert")].secret.secretName
+        action: replace
+        value: "{{ .project }}-cert"
