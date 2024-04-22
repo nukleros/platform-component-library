@@ -1,0 +1,10 @@
+---
+project: trust-manager
+controller:
+  replicas: 2
+  resources:
+    requests:
+      cpu: "25m"
+      memory: "32Mi"
+    limits:
+      memory: "64Mi"

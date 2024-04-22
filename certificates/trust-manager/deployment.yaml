@@ -1,0 +1,124 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trust-manager
+  namespace: nukleros-certs-system
+  labels:
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    app: trust-manager
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: trust-manager
+      app.kubernetes.io/instance: trust-manager
+      app.kubernetes.io/component: trust-manager
+  template:
+    metadata:
+      labels:
+        app: trust-manager
+        app.kubernetes.io/name: trust-manager
+        app.kubernetes.io/instance: trust-manager
+        app.kubernetes.io/version: v0.9.2
+        platform.nukleros.io/category: certificates
+        platform.nukleros.io/project: trust-manager
+        app.kubernetes.io/component: trust-manager
+    spec:
+      serviceAccountName: trust-manager
+      initContainers:
+        - name: cert-manager-package-debian
+          image: quay.io/jetstack/cert-manager-package-debian:20210119.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - /copyandmaybepause
+            - /debian-package
+            - /packages
+          volumeMounts:
+            - mountPath: /packages
+              name: packages
+              readOnly: false
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+      containers:
+        - name: trust-manager
+          image: quay.io/jetstack/trust-manager:v0.9.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 6443
+            - containerPort: 9402
+          readinessProbe:
+            httpGet:
+              port: 6060
+              path: /readyz
+            initialDelaySeconds: 3
+            periodSeconds: 7
+          command:
+            - trust-manager
+          args:
+            - --log-level=1
+            - --metrics-port=9402
+            - --readiness-probe-port=6060
+            - --readiness-probe-path=/readyz
+            - --trust-namespace=nukleros-certs-system
+            - --webhook-host=0.0.0.0
+            - --webhook-port=6443
+            - --webhook-certificate-dir=/tls
+            - --default-package-location=/packages/cert-manager-package-debian.json
+          volumeMounts:
+            - mountPath: /tls
+              name: tls
+              readOnly: true
+            - mountPath: /packages
+              name: packages
+              readOnly: true
+          resources:
+            requests:
+              cpu: 25m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+      nodeSelector:
+        kubernetes.io/os: linux
+      volumes:
+        - name: packages
+          emptyDir:
+            sizeLimit: 50M
+        - name: tls
+          secret:
+            defaultMode: 420
+            secretName: trust-manager-tls
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+        runAsGroup: 1001
+        runAsNonRoot: true
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                        - trust-manager

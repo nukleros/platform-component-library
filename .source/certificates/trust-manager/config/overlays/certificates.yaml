@@ -1,0 +1,56 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+yamlFiles:
+  - name: "trust-manager custom resource definitions"
+    path: "../../vendor/trust-manager.yaml"
+    outputPath: "certificates/trust-manager/certificates.yaml"
+    overlays:
+      - name: "ensure we are only acting upon certificate resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Issuer")]
+              - query: $[?($.kind != "Certificate")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure certificate common name generated correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.commonName
+        action: replace
+        value: "trust-manager.{{ .namespace }}.svc"
+
+      - name: "ensure certificate dns name generated correctly"
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind == "Certificate")]
+        query: spec.dnsNames
+        action: replace
+        value:
+          - "trust-manager.{{ .namespace }}.svc"

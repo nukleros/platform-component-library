@@ -1,0 +1,39 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: trust-manager
+  namespace: nukleros-certs-system
+  labels:
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    app: trust-manager
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+spec:
+  commonName: trust-manager.nukleros-certs-system.svc
+  dnsNames:
+    - trust-manager.nukleros-certs-system.svc
+  secretName: trust-manager-tls
+  revisionHistoryLimit: 1
+  issuerRef:
+    name: trust-manager
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: trust-manager
+  namespace: nukleros-certs-system
+  labels:
+    app.kubernetes.io/name: trust-manager
+    app.kubernetes.io/instance: trust-manager
+    app.kubernetes.io/version: v0.9.2
+    app: trust-manager
+    platform.nukleros.io/category: certificates
+    platform.nukleros.io/project: trust-manager
+    app.kubernetes.io/component: trust-manager
+spec:
+  selfSigned: {}
