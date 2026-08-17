@@ -36,5 +36,15 @@ if [ -d ${PROJECT_DIR}/vendor-helm ]; then
     # ensure the vendir directory is clean
     rm -rf ${PROJECT_DIR}/vendor/*
 
-    helm template ${PROJECT} ${PROJECT_DIR}/vendor-helm --include-crds | tee ${PROJECT_DIR}/vendor/${PROJECT}.yaml
+    # prefer a project-specific values-helm.yaml, otherwise fall back to the
+    # chart's own default values.yaml
+    if [ -f ${PROJECT_DIR}/config/values-helm.yaml ]; then
+        VALUES_HELM=${PROJECT_DIR}/config/values-helm.yaml
+    else
+        VALUES_HELM=${PROJECT_DIR}/vendor-helm/values.yaml
+    fi
+
+    helm template ${PROJECT} ${PROJECT_DIR}/vendor-helm \
+        --include-crds \
+        --values ${VALUES_HELM} | tee ${PROJECT_DIR}/vendor/${PROJECT}.yaml
 fi
