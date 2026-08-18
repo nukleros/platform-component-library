@@ -3,8 +3,11 @@ kind: Service
 metadata:
   name: nginx-ingress
   namespace: nginx-ingress
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
 spec:
-  type: NodePort 
+  type: LoadBalancer
   ports:
   - port: 80
     targetPort: 80

@@ -18,7 +18,7 @@ commonOverlays:
 
 yamlFiles:
   - name: "nginx deployments"
-    path: "../../vendor/deployment/nginx-ingress.yaml"
+    path: "../../vendor/deployments/deployment/nginx-ingress.yaml"
     outputPath: "ingress/ingress/deployment.yaml"
     overlays:
       - name: "ensure namespace is updated"
@@ -85,8 +85,6 @@ yamlFiles:
           args:
             - -enable-cert-manager
             - -enable-external-dns
-            - -v=3 # Enables extensive logging. Useful for troubleshooting.
             - -report-ingress-status
             - -external-service=nginx-ingress
             - -enable-prometheus-metrics
-

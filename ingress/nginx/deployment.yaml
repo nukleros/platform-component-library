@@ -17,17 +17,21 @@ spec:
     metadata:
       labels:
         app: nginx-ingress
+        app.kubernetes.io/name: nginx-ingress
         platform.nukleros.io/category: ingress
         platform.nukleros.io/project: nginx-ingress-controller
-        app.kubernetes.io/name: nginx-ingress
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9113"
         prometheus.io/scheme: http
     spec:
       serviceAccountName: nginx-ingress
+      automountServiceAccountToken: true
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       containers:
-        - image: nginx/nginx-ingress:2.3.0
+        - image: nginx/nginx-ingress:5.5.4
           imagePullPolicy: IfNotPresent
           name: nginx-ingress
           ports:
@@ -52,7 +56,7 @@ spec:
               cpu: "1"
               memory: 1Gi
           securityContext:
-            allowPrivilegeEscalation: true
+            allowPrivilegeEscalation: false
             runAsUser: 101
             runAsNonRoot: true
             capabilities:
@@ -71,10 +75,10 @@ spec:
                   fieldPath: metadata.name
           args:
             - -nginx-configmaps=$(POD_NAMESPACE)/nginx-config
-            - -default-server-tls-secret=$(POD_NAMESPACE)/default-server-secret
+            - -report-ingress-status
+            - -external-service=nginx-ingress
             - -enable-cert-manager
             - -enable-external-dns
-            - -v=3 # Enables extensive logging. Useful for troubleshooting.
             - -report-ingress-status
             - -external-service=nginx-ingress
             - -enable-prometheus-metrics

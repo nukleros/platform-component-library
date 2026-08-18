@@ -4,14 +4,33 @@ metadata:
   name: nginx-ingress
 rules:
 - apiGroups:
-  - ""
+  - discovery.k8s.io
   resources:
-  - services
-  - endpoints
+  - endpointslices
   verbs:
   - get
   - list
   - watch
+- apiGroups:
+  - "apps"
+  resources:
+  - replicasets
+  - daemonsets
+  - statefulsets
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
 - apiGroups:
   - ""
   resources:
@@ -35,8 +54,24 @@ rules:
   resources:
   - pods
   verbs:
+  - get
   - list
   - watch
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
 - apiGroups:
   - ""
   resources:
@@ -45,6 +80,16 @@ rules:
   - create
   - patch
   - list
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - create
 - apiGroups:
   - networking.k8s.io
   resources:
@@ -87,6 +132,7 @@ rules:
   - ingressclasses
   verbs:
   - get
+  - list
 - apiGroups:
     - cis.f5.com
   resources:

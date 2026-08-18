@@ -3,11 +3,8 @@ kind: Service
 metadata:
   name: nginx-ingress
   namespace: nginx-ingress
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "tcp"
-    service.beta.kubernetes.io/aws-load-balancer-proxy-protocol: "*"
 spec:
-  type: LoadBalancer
+  type: NodePort
   ports:
   - port: 80
     targetPort: 80

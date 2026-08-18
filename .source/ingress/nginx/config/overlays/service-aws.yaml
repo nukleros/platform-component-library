@@ -10,7 +10,7 @@ commonOverlays:
 
 yamlFiles:
   - name: "nginx services"
-    path: "../../vendor/service/loadbalancer-aws-elb.yaml"
+    path: "../../vendor/deployments/service/loadbalancer-aws-elb.yaml"
     outputPath: "ingress/nginx/service-aws.yaml"
     overlays:
       - name: "ensure namespace is updated"
@@ -20,4 +20,3 @@ yamlFiles:
       - name: "set unique name"
         query: metadata.name
         value: nginx-ingress-aws
-

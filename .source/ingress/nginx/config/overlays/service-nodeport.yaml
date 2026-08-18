@@ -9,11 +9,14 @@ commonOverlays:
       action: inject
 
 yamlFiles:
-  - name: "nginx default server cert secret"
-    path: "../../vendor/common/default-server-secret.yaml"
-    outputPath: "ingress/nginx/secret.yaml"
+  - name: "nginx services"
+    path: "../../vendor/deployments/service/nodeport.yaml"
+    outputPath: "ingress/nginx/service-nodeport.yaml"
     overlays:
       - name: "ensure namespace is updated"
         query: metadata.namespace
         value: "{{ .namespace }}"
 
+      - name: "set unique name"
+        query: metadata.name
+        value: nginx-ingress-nodeport

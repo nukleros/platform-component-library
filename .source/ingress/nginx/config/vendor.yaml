@@ -7,19 +7,17 @@ directories:
     contents:
       - path: ./
         git:
-          url: https://github.com/nginxinc/kubernetes-ingress.git
-          ref: v2.3.0
+          url: https://github.com/nginx/kubernetes-ingress.git
+          ref: v5.5.4
         includePaths:
           - deployments/**/*
+          - config/crd/bases/**/*
         excludePaths:
-          - deployments/common/crds/appprotect*
+          - deployments/common/plus-mgmt-configmap.yaml
           - deployments/daemon-set/nginx-plus-ingress.yaml
           - deployments/deployment/appprotect-dos-arb.yaml
           - deployments/deployment/nginx-plus-ingress.yaml
-          - deployments/helm-chart-dos-arbitrator/**/*
-          - deployments/helm-chart/**/*
           - deployments/service/appprotect-dos-arb-svc.yaml
           - deployments/rbac/ap*
+          - deployments/stateful-set/**/*
           - deployments/README.md
-        newRootPath: deployments
-

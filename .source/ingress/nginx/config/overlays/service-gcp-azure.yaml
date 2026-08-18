@@ -10,7 +10,7 @@ commonOverlays:
 
 yamlFiles:
   - name: "nginx services"
-    path: "../../vendor/service/loadbalancer.yaml"
+    path: "../../vendor/deployments/service/loadbalancer.yaml"
     outputPath: "ingress/nginx/service-gcp-azure.yaml"
     overlays:
       - name: "ensure namespace is updated"
@@ -20,4 +20,3 @@ yamlFiles:
       - name: "set unique name"
         query: metadata.name
         value: nginx-ingress-gcp-azure
-
