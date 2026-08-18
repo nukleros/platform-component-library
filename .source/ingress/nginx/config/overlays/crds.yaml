@@ -10,6 +10,5 @@ commonOverlays:
 
 yamlFiles:
   - name: "nginx custom resource definitions"
-    path: "../../vendor/common/crds"
+    path: "../../vendor/config/crd/bases"
     outputPath: "ingress/nginx"
-

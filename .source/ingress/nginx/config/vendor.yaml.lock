@@ -2,10 +2,10 @@ apiVersion: vendir.k14s.io/v1alpha1
 directories:
 - contents:
   - git:
-      commitTitle: Update images versions (#2838)
-      sha: 979db22d8065b22fedb410c9b9c5875cf0a6dc66
+      commitTitle: Release 5.5.4 (#10475)
+      sha: f92a24e4fd2b52c72739c4a1f4f9bb6424bf5731
       tags:
-      - v2.3.0
-    path: ./
+      - v5.5.4
+    path: .
   path: .source/ingress/nginx/vendor
 kind: LockConfig

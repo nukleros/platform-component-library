@@ -8,9 +8,13 @@ commonOverlays:
     onMissing:
       action: inject
 
+  - name: "ensure namespace is updated"
+    query: metadata.namespace
+    value: "{{ .namespace }}"
+
 yamlFiles:
   - name: "nginx service account"
-    path: "../../vendor/common/ns-and-sa.yaml"
+    path: "../../vendor/deployments/common/ns-and-sa.yaml"
     outputPath: "ingress/nginx/rbac.yaml"
     overlays:
       - name: "ensure we are only acting upon service account resources"
@@ -21,7 +25,7 @@ yamlFiles:
               - query: $[?($.kind != "ServiceAccount")]
 
   - name: "nginx cluster role"
-    path: "../../vendor/rbac/rbac.yaml"
+    path: "../../vendor/deployments/rbac/rbac.yaml"
     outputPath: "ingress/nginx/rbac.yaml"
     overlays:
       - name: "ensure namespace is updated"
@@ -35,5 +39,3 @@ yamlFiles:
           - metadata.namespace
           - subjects[*].namespace
         value: "{{ .namespace }}"
-
-
