@@ -19,6 +19,11 @@ if [ -z `which vendir` ]; then
     exit 1
 fi
 
+if [ -z `which helm` ]; then
+    echo "helm not installed..."
+    exit 1
+fi
+
 PROJECT_DIR=".source/${CATEGORY}/${PROJECT}"
 
 # sync the project
@@ -46,5 +51,6 @@ if [ -d ${PROJECT_DIR}/vendor-helm ]; then
 
     helm template ${PROJECT} ${PROJECT_DIR}/vendor-helm \
         --include-crds \
+        --kube-version '1.36.1' \
         --values ${VALUES_HELM} | tee ${PROJECT_DIR}/vendor/${PROJECT}.yaml
 fi
