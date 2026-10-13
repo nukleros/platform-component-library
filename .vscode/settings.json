@@ -1,0 +1,9 @@
+{
+  // overlays use typed go templates (e.g. `replicas: !!int {{ .replicas }}`), which parse as
+  // tagged flow mappings until yot renders them.  register the resolved tag names so the
+  // redhat yaml extension does not report them as unresolved.
+  "yaml.customTags": [
+    "tag:yaml.org,2002:int mapping",
+    "tag:yaml.org,2002:str mapping"
+  ]
+}
