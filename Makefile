@@ -19,9 +19,11 @@ yot:
 #
 CATEGORY ?=
 PROJECT ?=
+NAMESPACE ?= nukleros-$(CATEGORY)-system
 project:
 	@mkdir -p .source/$(CATEGORY)/$(PROJECT)/config/overlays .source/$(CATEGORY)/$(PROJECT)/static .source/$(CATEGORY)/$(PROJECT)/vendor $(CATEGORY)/$(PROJECT)
 	@touch .source/$(CATEGORY)/$(PROJECT)/config/vendor.yaml .source/$(CATEGORY)/$(PROJECT)/config/values.yaml
+	@[ -f .source/$(CATEGORY)/values.yaml ] || printf -- '---\nnamespace: $(NAMESPACE)\ncategory: $(CATEGORY)\n' > .source/$(CATEGORY)/values.yaml
 
 download:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/download.sh
