@@ -35,4 +35,4 @@ deploy:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) sh .source/$(CATEGORY)/$(PROJECT)/deploy.sh
 
 test:
-	@kubectl create ns $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -f .source/$(CATEGORY)/$(PROJECT)/test/
+	@kubectl create ns $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -n $(NAMESPACE) -f .source/$(CATEGORY)/$(PROJECT)/test/
