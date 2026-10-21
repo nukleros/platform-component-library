@@ -54,3 +54,5 @@ Git (e.g. see what changed), and easy to perform with the used tooling.
 
 See [.source/$CATEGORY](.source/) for a list of supported projects where `$CATEGORY` is the 
 category of the project.
+
+See the [developer guide](DEVELOPER.md) to add projects or upgrade existing ones.
