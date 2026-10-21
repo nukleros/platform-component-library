@@ -8,7 +8,7 @@ The following is for developers and outlines how to:
 
 ## Diagram
 
-![Diagram](./images/pipeline.drawio.svg)
+![Diagram](./.images/pipeline.drawio.svg)
 
 
 ## Add New Project
