@@ -19,9 +19,11 @@ yot:
 #
 CATEGORY ?=
 PROJECT ?=
+NAMESPACE ?= nukleros-$(CATEGORY)-system
 project:
 	@mkdir -p .source/$(CATEGORY)/$(PROJECT)/config/overlays .source/$(CATEGORY)/$(PROJECT)/static .source/$(CATEGORY)/$(PROJECT)/vendor $(CATEGORY)/$(PROJECT)
 	@touch .source/$(CATEGORY)/$(PROJECT)/config/vendor.yaml .source/$(CATEGORY)/$(PROJECT)/config/values.yaml
+	@[ -f .source/$(CATEGORY)/values.yaml ] || printf -- '---\nnamespace: $(NAMESPACE)\ncategory: $(CATEGORY)\n' > .source/$(CATEGORY)/values.yaml
 
 download:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) .scripts/download.sh
@@ -33,4 +35,4 @@ deploy:
 	@CATEGORY=$(CATEGORY) PROJECT=$(PROJECT) sh .source/$(CATEGORY)/$(PROJECT)/deploy.sh
 
 test:
-	@kubectl create ns $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -f .source/$(CATEGORY)/$(PROJECT)/test/
+	@kubectl create ns $(NAMESPACE) --dry-run=client -o yaml | kubectl apply -f - && kubectl apply -n $(NAMESPACE) -f .source/$(CATEGORY)/$(PROJECT)/test/
