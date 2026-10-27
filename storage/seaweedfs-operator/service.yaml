@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-operator
+  namespace: nukleros-storage-system
+  labels:
+    app: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: seaweedfs-operator-webhook
+  namespace: nukleros-storage-system
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+spec:
+  type: ClusterIP
+  ports:
+    - name: https
+      port: 443
+      targetPort: 9443
+  selector:
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator

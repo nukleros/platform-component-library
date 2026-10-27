@@ -1,0 +1,10 @@
+---
+replicaCount: 1
+grafanaDashboard:
+  enabled: false
+serviceMonitor:
+  enabled: false
+webhook:
+  enabled: true
+  certManager:
+    enabled: true

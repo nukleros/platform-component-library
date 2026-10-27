@@ -1,0 +1,49 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["app.kubernetes.io/version"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "remove the creation timestamp"
+    query: metadata.creationTimestamp
+    action: delete
+
+yamlFiles:
+  - name: "seaweedfs-operator rbac"
+    path: "../../vendor/seaweedfs-operator.yaml"
+    outputPath: "storage/seaweedfs-operator/rbac.yaml"
+    overlays:
+      - name: "ensure we are only acting upon rbac resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ServiceAccount")]
+              - query: $[?($.kind != "Role")]
+              - query: $[?($.kind != "RoleBinding")]
+              - query: $[?($.kind != "ClusterRole")]
+              - query: $[?($.kind != "ClusterRoleBinding")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
