@@ -35,15 +35,22 @@ if [ ! -f ${PROJECT_DIR}/config/values.yaml ]; then
     exit 1
 fi
 
+# yot drops the quotes from strings like "Off", which kubectl (YAML 1.1) then reads
+# as booleans, so quote any bare YAML 1.1 boolean word left in a value
+YAML11_BOOLS='y|Y|yes|Yes|YES|n|N|no|No|NO|on|On|ON|off|Off|OFF'
+
 for OVERLAY in `ls ${PROJECT_DIR}/config/overlays`; do \
-    yot \
+    OUTPUT=$(yot \
         --indent-level=2 \
         --instructions=${PROJECT_DIR}/config/overlays/${OVERLAY} \
         --output-directory=. \
         --values-file=${PROJECT_DIR}/config/values.yaml \
         --values-file=${CATEGORY_DIR}/values.yaml \
         --remove-comments \
-        --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
+        --stdout)
+
+    printf '%s\n' "${OUTPUT}" | \
+        sed -E "s/^([[:space:]]*(- |[^:#]+: ))(${YAML11_BOOLS})$/\1\"\3\"/" > ${CATEGORY}/${PROJECT}/${OVERLAY}
     
     # TODO: remove duplication in overlays for nukleros labels
     # run the stdout through our common overlays
