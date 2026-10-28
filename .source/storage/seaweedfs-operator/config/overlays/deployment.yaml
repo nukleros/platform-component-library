@@ -1,0 +1,101 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["app.kubernetes.io/version"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "remove the creation timestamp"
+    query: metadata.creationTimestamp
+    action: delete
+
+yamlFiles:
+  - name: "seaweedfs-operator deployment"
+    path: "../../vendor/seaweedfs-operator.yaml"
+    outputPath: "storage/seaweedfs-operator/deployment.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployment resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure replicas are updated"
+        query: spec.replicas
+        value: !!int {{ .controller.replicas }}
+
+      - name: "ensure image is updated"
+        query: spec.template.spec.containers[?(@.name == "seaweedfs-operator")].image
+        value: "{{ .controller.image }}:{{ .controller.version }}"
+
+      - name: "remove empty env"
+        query: spec.template.spec.containers[?(@.name == "seaweedfs-operator")].env
+        action: delete
+
+      - name: "ensure controller resources are updated"
+        query: spec.template.spec.containers[?(@.name == "seaweedfs-operator")].resources
+        action: replace
+        value:
+          requests:
+            cpu: "{{ .controller.resources.requests.cpu }}"
+            memory: "{{ .controller.resources.requests.memory }}"
+          limits:
+            memory: "{{ .controller.resources.limits.memory }}"
+
+      - name: "ensure match labels is set"
+        query: spec.selector.matchLabels
+        action: replace
+        value:
+          app.kubernetes.io/name: "{{ .project }}"
+          app.kubernetes.io/instance: "{{ .project }}"
+          app.kubernetes.io/component: "{{ .project }}"
+
+      - name: "ensure controller affinity is set"
+        query: spec.template.spec
+        action: merge
+        value:
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    topologyKey: kubernetes.io/hostname
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - "{{ .project }}"
+          nodeSelector:
+            kubernetes.io/os: linux

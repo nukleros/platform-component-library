@@ -35,15 +35,36 @@ if [ ! -f ${PROJECT_DIR}/config/values.yaml ]; then
     exit 1
 fi
 
+# yot drops the quotes from strings like "Off", which kubectl (YAML 1.1) then reads
+# as booleans, so quote any bare YAML 1.1 boolean word left in a value.  lines
+# inside block scalars (e.g. config embedded with "|") are left alone.
+QUOTE_YAML11_BOOLS='
+BEGIN { block = -1 }
+{
+    match($0, /^ */); indent = RLENGTH
+    if (block >= 0 && ($0 ~ /^ *$/ || indent > block)) { print; next }
+    block = -1
+
+    if ($0 ~ /^ *(- |[^:#]+: )(y|Y|yes|Yes|YES|n|N|no|No|NO|on|On|ON|off|Off|OFF)$/) {
+        match($0, /[^ ]+$/)
+        $0 = substr($0, 1, RSTART - 1) "\"" substr($0, RSTART) "\""
+    } else if ($0 ~ /(^ *|: |- )[|>][-+0-9]*$/) {
+        block = indent
+    }
+    print
+}'
+
 for OVERLAY in `ls ${PROJECT_DIR}/config/overlays`; do \
-    yot \
+    OUTPUT=$(yot \
         --indent-level=2 \
         --instructions=${PROJECT_DIR}/config/overlays/${OVERLAY} \
         --output-directory=. \
         --values-file=${PROJECT_DIR}/config/values.yaml \
         --values-file=${CATEGORY_DIR}/values.yaml \
         --remove-comments \
-        --stdout > ${CATEGORY}/${PROJECT}/${OVERLAY}
+        --stdout)
+
+    printf '%s\n' "${OUTPUT}" | awk "${QUOTE_YAML11_BOOLS}" > ${CATEGORY}/${PROJECT}/${OVERLAY}
     
     # TODO: remove duplication in overlays for nukleros labels
     # run the stdout through our common overlays

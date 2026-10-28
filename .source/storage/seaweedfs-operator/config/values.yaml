@@ -1,0 +1,12 @@
+---
+project: seaweedfs-operator
+controller:
+  image: chrislusf/seaweedfs-operator
+  version: 1.0.42
+  replicas: 2
+  resources:
+    requests:
+      cpu: "50m"
+      memory: "64Mi"
+    limits:
+      memory: "256Mi"

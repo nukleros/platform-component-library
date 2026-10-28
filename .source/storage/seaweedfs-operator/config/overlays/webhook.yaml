@@ -1,0 +1,48 @@
+---
+commonOverlays:
+  - name: "apply common and nukleros labels"
+    query: "metadata.labels"
+    value:
+      app: "{{ .project }}"
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+      app.kubernetes.io/name: "{{ .project }}"
+      app.kubernetes.io/instance: "{{ .project }}"
+      app.kubernetes.io/component: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query: 
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["app.kubernetes.io/version"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.annotations["helm.sh/resource-policy"]
+    action: delete
+
+  - name: "remove the creation timestamp"
+    query: metadata.creationTimestamp
+    action: delete
+
+yamlFiles:
+  - name: "seaweedfs-operator webhooks"
+    path: "../../vendor/seaweedfs-operator.yaml"
+    outputPath: "storage/seaweedfs-operator/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+
+      - name: "ensure namespace is updated"
+        query: webhooks[*].clientConfig.service.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure webhook annotation with appropriate namespace is updated"
+        query: metadata.annotations['cert-manager.io/inject-ca-from']
+        value: "{{ .namespace }}/{{ .project }}-webhook-cert"

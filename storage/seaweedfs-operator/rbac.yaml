@@ -1,0 +1,356 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: seaweedfs-operator
+  namespace: nukleros-storage-system
+  labels:
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seaweedfs-operator-manager-role
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - secrets
+      - services
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+      - deployments
+      - statefulsets
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - cronjobs
+      - jobs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - cert-manager.io
+    resources:
+      - certificates
+      - issuers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - monitoring.coreos.com
+    resources:
+      - servicemonitors
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - adminscripts
+      - bucketlifecyclepolicies
+      - bucketnotifications
+      - buckets
+      - s3credentials
+      - s3identities
+      - s3oidcproviders
+      - s3policies
+      - s3policybindings
+      - seaweedbackups
+      - seaweedrestores
+      - seaweeds
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - adminscripts/finalizers
+      - bucketlifecyclepolicies/finalizers
+      - bucketnotifications/finalizers
+      - buckets/finalizers
+      - s3credentials/finalizers
+      - s3identities/finalizers
+      - s3oidcproviders/finalizers
+      - s3policies/finalizers
+      - s3policybindings/finalizers
+      - seaweedbackups/finalizers
+      - seaweedrestores/finalizers
+      - seaweeds/finalizers
+    verbs:
+      - update
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - adminscripts/status
+      - bucketlifecyclepolicies/status
+      - bucketnotifications/status
+      - buckets/status
+      - s3credentials/status
+      - s3identities/status
+      - s3oidcproviders/status
+      - s3policies/status
+      - s3policybindings/status
+      - seaweedbackups/status
+      - seaweedrestores/status
+      - seaweeds/status
+    verbs:
+      - get
+      - patch
+      - update
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - resourcereferencegrants
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - persistentvolumeclaims
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - storage.k8s.io
+    resources:
+      - storageclasses
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seaweed-editor-role
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+rules:
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - seaweeds
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - seaweeds/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: seaweed-viewer-role
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+rules:
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - seaweeds
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - seaweed.seaweedfs.com
+    resources:
+      - seaweeds/status
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: seaweedfs-operator-manager-rolebinding
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: seaweedfs-operator-manager-role
+subjects:
+  - kind: ServiceAccount
+    name: seaweedfs-operator
+    namespace: nukleros-storage-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: seaweedfs-operator-leader-election-role
+  namespace: nukleros-storage-system
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps/status
+    verbs:
+      - get
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - get
+      - list
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: seaweedfs-operator-leader-election-rolebinding
+  namespace: nukleros-storage-system
+  labels:
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: seaweedfs-operator-leader-election-role
+subjects:
+  - kind: ServiceAccount
+    name: seaweedfs-operator
+    namespace: nukleros-storage-system

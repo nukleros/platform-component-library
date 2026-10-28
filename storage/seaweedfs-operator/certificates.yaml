@@ -1,0 +1,39 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: seaweedfs-operator-webhook-cert
+  namespace: nukleros-storage-system
+  labels:
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+spec:
+  dnsNames:
+    - seaweedfs-operator-webhook
+    - seaweedfs-operator-webhook.nukleros-storage-system
+    - seaweedfs-operator-webhook.nukleros-storage-system.svc
+    - seaweedfs-operator-webhook.nukleros-storage-system.svc.cluster.local
+  secretName: seaweedfs-operator-webhook-server-cert
+  issuerRef:
+    name: seaweedfs-operator-webhook-selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+  commonName: seaweedfs-operator-webhook.nukleros-storage-system.svc
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: seaweedfs-operator-webhook-selfsigned-issuer
+  namespace: nukleros-storage-system
+  labels:
+    app.kubernetes.io/name: seaweedfs-operator
+    app.kubernetes.io/instance: seaweedfs-operator
+    app: seaweedfs-operator
+    platform.nukleros.io/category: storage
+    platform.nukleros.io/project: seaweedfs-operator
+    app.kubernetes.io/component: seaweedfs-operator
+spec:
+  selfSigned: {}
