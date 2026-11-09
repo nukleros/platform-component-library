@@ -21934,6 +21934,7 @@ spec:
 #
 # $detectedBinDir exists to support a GKE-specific platform override,
 # and is deprecated in favor of using the explicit `gke` platform profile.
+
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
@@ -22117,7 +22118,7 @@ spec:
         # Used to install CNI.
         - name: cni-bin-dir
           hostPath:
-            path: /opt/cni/bin
+            path: /home/kubernetes/bin
         - name: cni-host-procfs
           hostPath:
             path: /proc
@@ -22532,40 +22533,6 @@ spec:
       target:
         type: Utilization
         averageUtilization: 80
----
-# Source: ambient/charts/base/templates/zzz_profile.yaml
-#  Flatten globals, if defined on a per-chart basis
----
-# Source: ambient/charts/cni/templates/zzz_profile.yaml
-#  Flatten globals, if defined on a per-chart basis
----
-# Source: ambient/charts/istiod/templates/configmap-jwks.yaml
-# Not created if istiod is running remotely
----
-# Source: ambient/charts/istiod/templates/poddisruptionbudget.yaml
-# Not created if istiod is running remotely
-# a workaround for https://github.com/kubernetes/kubernetes/issues/93476
----
-# Source: ambient/charts/istiod/templates/remote-istiod-service.yaml
-# This file is only used for remote
----
-# Source: ambient/charts/istiod/templates/revision-tags-mwc.yaml
-# Adapted from istio-discovery/templates/mutatingwebhook.yaml
-# Removed paths for legacy and default selectors since a revision tag
-# is inherently created from a specific revision
-# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.
----
-# Source: ambient/charts/istiod/templates/revision-tags-svc.yaml
-# Adapted from istio-discovery/templates/service.yaml
----
-# Source: ambient/charts/istiod/templates/validatingadmissionpolicy.yaml
-# Created if this is not a remote istiod, OR if it is and is also a config cluster
----
-# Source: ambient/charts/istiod/templates/zzz_profile.yaml
-#  Flatten globals, if defined on a per-chart basis
----
-# Source: ambient/charts/ztunnel/templates/zzz_profile.yaml
-#  Flatten globals, if defined on a per-chart basis
 ---
 # Source: ambient/charts/istiod/templates/mutatingwebhook.yaml
 # TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.

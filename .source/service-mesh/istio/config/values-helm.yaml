@@ -43,6 +43,13 @@ cni:
   seccompProfile:
     type: "RuntimeDefault"
 
+  # NOTE: required on GKE, which only admits pods using the system-node-critical priority class
+  #       (which the cni agent and ztunnel both use) in a namespace with a matching
+  #       ResourceQuota.  enabled for all platforms for consistency, as it is harmless where
+  #       that restriction is not configured.
+  resourceQuotas:
+    enabled: true
+
 # per-node L4 proxy that performs the mTLS.  one pod per node, not one per workload.
 #
 # NOTE: no seccompProfile override here, deliberately.  the ztunnel chart exposes no such
@@ -53,3 +60,7 @@ ztunnel:
   profile: "ambient"
   resourceName: "ztunnel"
   istioNamespace: "nukleros-service-mesh-system"
+
+  # NOTE: see the cni resourceQuotas note above.
+  resourceQuotas:
+    enabled: true

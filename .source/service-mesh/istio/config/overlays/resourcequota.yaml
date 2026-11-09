@@ -18,11 +18,13 @@ commonOverlays:
     action: delete
 
 # NOTE: GKE only admits pods using the system-node-critical priority class (which the cni
-#       agent and ztunnel both use) in a namespace with a matching ResourceQuota.
+#       agent and ztunnel both use) in a namespace with a matching ResourceQuota.  these are
+#       applied on all platforms for consistency, as they are harmless where that restriction
+#       is not configured.
 yamlFiles:
-  - name: "istio resource quotas (gke)"
-    path: "../../vendor/istio-gke.yaml"
-    outputPath: "service-mesh/istio/resourcequota-gke.yaml"
+  - name: "istio resource quotas"
+    path: "../../vendor/istio.yaml"
+    outputPath: "service-mesh/istio/resourcequota.yaml"
     overlays:
       - name: "ensure we are only acting upon resource quota resources"
         query: "$"
