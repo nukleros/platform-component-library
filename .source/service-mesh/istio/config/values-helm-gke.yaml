@@ -1,0 +1,22 @@
+#
+# NOTE: GKE-specific overrides, layered on top of values-helm.yaml by the download script to
+# produce vendor/istio-gke.yaml.
+#
+global:
+  # leaves cniBinDir empty so the chart autodetects GKE's nonstandard CNI binary path, and
+  # creates the ResourceQuota that GKE requires before a pod may use the system-node-critical
+  # priority class (which ztunnel and the CNI agent both use).  without it those DaemonSets
+  # are rejected by quota admission and the mesh never carries traffic.
+  platform: "gke"
+
+cni:
+  # NOTE: the gke platform profile leaves cniBinDir empty so the chart can autodetect GKE's
+  #       CNI binary path, but that autodetection inspects the live cluster version (which
+  #       contains '-gke') and 'helm template --kube-version' never matches it.  it must be
+  #       set explicitly here or the rendered manifests fall back to /opt/cni/bin.
+  #
+  # NOTE: this is intentionally nested as cni.cni.cniBinDir.  the cni chart merges its legacy
+  #       nested 'cni' block over its top-level values (templates/zzy_descope_legacy.yaml), and
+  #       the gke profile sets cni.cniBinDir to "", which clobbers a top-level cni.cniBinDir.
+  cni:
+    cniBinDir: "/home/kubernetes/bin"

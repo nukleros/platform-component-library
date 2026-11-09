@@ -1,0 +1,17 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.30.0
+directories:
+  # NOTE: istio ambient is made up of four charts (base, istiod, cni, ztunnel) which must all
+  #       be on the same version.  the upstream 'ambient' chart is an umbrella chart which
+  #       bundles all four as subcharts, which allows us to vendor and template it as a single
+  #       chart with a single values-helm.yaml.
+  - path: .source/service-mesh/istio/vendor-helm
+    contents:
+      - path: ./
+        helmChart:
+          name: ambient
+          version: "1.30.4"
+          repository:
+            url: https://istio-release.storage.googleapis.com/charts

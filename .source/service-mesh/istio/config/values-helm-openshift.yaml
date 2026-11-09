@@ -1,0 +1,8 @@
+#
+# NOTE: OpenShift-specific overrides, layered on top of values-helm.yaml by the download
+# script to produce vendor/istio-openshift.yaml.
+#
+global:
+  # uses multus as the CNI provider with OpenShift's CNI paths, sets the spc_t SELinux type
+  # and adds the SecurityContextConstraints RBAC that OpenShift requires.
+  platform: "openshift"

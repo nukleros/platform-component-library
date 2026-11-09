@@ -1,0 +1,44 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+yamlFiles:
+  - name: "istio horizontal pod autoscalers"
+    path: "../../vendor/istio.yaml"
+    outputPath: "service-mesh/istio/horizontalpodautoscaler.yaml"
+    overlays:
+      - name: "ensure we are only acting upon horizontal pod autoscaler resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "HorizontalPodAutoscaler")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure istiod replicas are updated"
+        query: spec
+        action: merge
+        value:
+          minReplicas: !!int {{ .istiod.autoscaling.minReplicas }}
+          maxReplicas: !!int {{ .istiod.autoscaling.maxReplicas }}
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod")]

@@ -1,0 +1,325 @@
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/base/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/cni/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/configmap-jwks.yaml
+# Not created if istiod is running remotely
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/poddisruptionbudget.yaml
+# Not created if istiod is running remotely
+# a workaround for https://github.com/kubernetes/kubernetes/issues/93476
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/remote-istiod-service.yaml
+# This file is only used for remote
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-mwc.yaml
+# Adapted from istio-discovery/templates/mutatingwebhook.yaml
+# Removed paths for legacy and default selectors since a revision tag
+# is inherently created from a specific revision
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-svc.yaml
+# Adapted from istio-discovery/templates/service.yaml
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/validatingadmissionpolicy.yaml
+# Created if this is not a remote istiod, OR if it is and is also a config cluster
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/mutatingwebhook.yaml
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  name: istio-sidecar-injector-nukleros-service-mesh-system
+  labels:
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Pilot
+    app: sidecar-injector
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+webhooks:
+  - name: rev.namespace.sidecar-injector.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /inject
+        port: 443
+    sideEffects: None
+    rules:
+      - operations:
+          - CREATE
+        apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        resources:
+          - pods
+    failurePolicy: Fail
+    reinvocationPolicy: Never
+    admissionReviewVersions:
+      - v1
+    namespaceSelector:
+      matchExpressions:
+        - key: istio.io/rev
+          operator: In
+          values:
+            - default
+        - key: istio-injection
+          operator: DoesNotExist
+    objectSelector:
+      matchExpressions:
+        - key: sidecar.istio.io/inject
+          operator: NotIn
+          values:
+            - "false"
+  - name: rev.object.sidecar-injector.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /inject
+        port: 443
+    sideEffects: None
+    rules:
+      - operations:
+          - CREATE
+        apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        resources:
+          - pods
+    failurePolicy: Fail
+    reinvocationPolicy: Never
+    admissionReviewVersions:
+      - v1
+    namespaceSelector:
+      matchExpressions:
+        - key: istio.io/rev
+          operator: DoesNotExist
+        - key: istio-injection
+          operator: DoesNotExist
+    objectSelector:
+      matchExpressions:
+        - key: sidecar.istio.io/inject
+          operator: NotIn
+          values:
+            - "false"
+        - key: istio.io/rev
+          operator: In
+          values:
+            - default
+  - name: namespace.sidecar-injector.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /inject
+        port: 443
+    sideEffects: None
+    rules:
+      - operations:
+          - CREATE
+        apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        resources:
+          - pods
+    failurePolicy: Fail
+    reinvocationPolicy: Never
+    admissionReviewVersions:
+      - v1
+    namespaceSelector:
+      matchExpressions:
+        - key: istio-injection
+          operator: In
+          values:
+            - enabled
+    objectSelector:
+      matchExpressions:
+        - key: sidecar.istio.io/inject
+          operator: NotIn
+          values:
+            - "false"
+  - name: object.sidecar-injector.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /inject
+        port: 443
+    sideEffects: None
+    rules:
+      - operations:
+          - CREATE
+        apiGroups:
+          - ""
+        apiVersions:
+          - v1
+        resources:
+          - pods
+    failurePolicy: Fail
+    reinvocationPolicy: Never
+    admissionReviewVersions:
+      - v1
+    namespaceSelector:
+      matchExpressions:
+        - key: istio-injection
+          operator: DoesNotExist
+        - key: istio.io/rev
+          operator: DoesNotExist
+    objectSelector:
+      matchExpressions:
+        - key: sidecar.istio.io/inject
+          operator: In
+          values:
+            - "true"
+        - key: istio.io/rev
+          operator: DoesNotExist
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: istiod-default-validator
+  labels:
+    app: istiod
+    istio: istiod
+    istio.io/rev: default
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+webhooks:
+  - name: validation.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /validate
+    rules:
+      - operations:
+          - CREATE
+          - UPDATE
+        apiGroups:
+          - security.istio.io
+          - networking.istio.io
+          - telemetry.istio.io
+          - extensions.istio.io
+        apiVersions:
+          - '*'
+        resources:
+          - '*'
+    failurePolicy: Ignore
+    sideEffects: None
+    admissionReviewVersions:
+      - v1
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  name: istio-validator-nukleros-service-mesh-system
+  labels:
+    app: istiod
+    istio: istiod
+    istio.io/rev: default
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+webhooks:
+  - name: rev.validation.istio.io
+    clientConfig:
+      service:
+        name: istiod
+        namespace: nukleros-service-mesh-system
+        path: /validate
+    rules:
+      - operations:
+          - CREATE
+          - UPDATE
+        apiGroups:
+          - security.istio.io
+          - networking.istio.io
+          - telemetry.istio.io
+          - extensions.istio.io
+        apiVersions:
+          - '*'
+        resources:
+          - '*'
+    failurePolicy: Ignore
+    sideEffects: None
+    admissionReviewVersions:
+      - v1
+    objectSelector:
+      matchExpressions:
+        - key: istio.io/rev
+          operator: In
+          values:
+            - default

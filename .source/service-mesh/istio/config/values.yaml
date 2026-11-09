@@ -1,0 +1,32 @@
+---
+project: istio
+istiod:
+  # NOTE: istiod is scaled by its HorizontalPodAutoscaler, so replicas are set there rather
+  #       than on the deployment (which would fight the autoscaler on every apply).
+  autoscaling:
+    minReplicas: 2
+    maxReplicas: 5
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2048Mi"
+    limits:
+      cpu: "1000m"
+      memory: "2048Mi"
+cni:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: "200m"
+      memory: "256Mi"
+ztunnel:
+  # NOTE: no cpu limit, deliberately.  ztunnel carries all meshed traffic on its node, so cpu
+  #       throttling adds latency to every enrolled workload on that node.
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      memory: "1024Mi"

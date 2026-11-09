@@ -1,0 +1,47 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+yamlFiles:
+  - name: "istio webhooks"
+    path: "../../vendor/istio.yaml"
+    outputPath: "service-mesh/istio/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - webhooks[*].clientConfig.service.namespace
+        value: "{{ .namespace }}"
+
+      # NOTE: istiod derives the name of the injection webhook it patches with its ca bundle
+      #       from its own namespace.  upstream renders it from the release namespace, which is
+      #       'default' because the download script does not pass --namespace.
+      - name: "ensure sidecar injector webhook name is suffixed with the namespace"
+        query: metadata.name
+        value: "istio-sidecar-injector-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istio-sidecar-injector-default")]

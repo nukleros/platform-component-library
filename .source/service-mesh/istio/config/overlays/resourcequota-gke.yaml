@@ -1,0 +1,36 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+# NOTE: GKE only admits pods using the system-node-critical priority class (which the cni
+#       agent and ztunnel both use) in a namespace with a matching ResourceQuota.
+yamlFiles:
+  - name: "istio resource quotas (gke)"
+    path: "../../vendor/istio-gke.yaml"
+    outputPath: "service-mesh/istio/resourcequota-gke.yaml"
+    overlays:
+      - name: "ensure we are only acting upon resource quota resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ResourceQuota")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"

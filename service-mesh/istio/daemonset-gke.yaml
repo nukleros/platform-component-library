@@ -1,0 +1,466 @@
+---
+kind: DaemonSet
+apiVersion: apps/v1
+metadata:
+  name: istio-cni-node
+  namespace: nukleros-service-mesh-system
+  labels:
+    k8s-app: istio-cni-node
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  selector:
+    matchLabels:
+      k8s-app: istio-cni-node
+  updateStrategy:
+    rollingUpdate:
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        k8s-app: istio-cni-node
+        sidecar.istio.io/inject: "false"
+        istio.io/dataplane-mode: none
+        app.kubernetes.io/name: istio-cni
+        app.kubernetes.io/instance: istio
+        app.kubernetes.io/part-of: istio
+        app.kubernetes.io/version: 1.30.4
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "15014"
+        prometheus.io/path: /metrics
+        container.apparmor.security.beta.kubernetes.io/install-cni: unconfined
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      priorityClassName: system-node-critical
+      serviceAccountName: istio-cni
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: install-cni
+          image: registry.istio.io/release/install-cni:1.30.4-distroless
+          ports:
+            - containerPort: 15014
+              name: metrics
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8000
+          securityContext:
+            privileged: false
+            runAsGroup: 0
+            runAsUser: 0
+            runAsNonRoot: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN
+                - NET_RAW
+                - SYS_PTRACE
+                - SYS_ADMIN
+                - DAC_OVERRIDE
+            seccompProfile:
+              type: RuntimeDefault
+          command:
+            - install-cni
+          args:
+            - --log_output_level=info
+          envFrom:
+            - configMapRef:
+                name: istio-cni-config
+          env:
+            - name: REPAIR_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: REPAIR_RUN_AS_DAEMON
+              value: "true"
+            - name: REPAIR_SIDECAR_ANNOTATION
+              value: sidecar.istio.io/status
+            - name: ALLOW_SWITCH_TO_HOST_NS
+              value: "true"
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: GOMEMLIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.memory
+                  divisor: "1"
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: "1"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - mountPath: /host/opt/cni/bin
+              name: cni-bin-dir
+            - mountPath: /host/proc
+              name: cni-host-procfs
+              readOnly: true
+            - mountPath: /host/etc/cni/net.d
+              name: cni-net-dir
+            - mountPath: /var/run/istio-cni
+              name: cni-socket-dir
+            - mountPath: /host/var/run/netns
+              mountPropagation: HostToContainer
+              name: cni-netns-dir
+            - mountPath: /var/run/ztunnel
+              name: cni-ztunnel-sock-dir
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+      volumes:
+        - name: cni-bin-dir
+          hostPath:
+            path: /opt/cni/bin
+        - name: cni-host-procfs
+          hostPath:
+            path: /proc
+            type: Directory
+        - name: cni-ztunnel-sock-dir
+          hostPath:
+            path: /var/run/ztunnel
+            type: DirectoryOrCreate
+        - name: cni-net-dir
+          hostPath:
+            path: /etc/cni/net.d
+        - name: cni-socket-dir
+          hostPath:
+            path: /var/run/istio-cni
+        - name: cni-netns-dir
+          hostPath:
+            path: /var/run/netns
+            type: DirectoryOrCreate
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ztunnel
+  namespace: nukleros-service-mesh-system
+  labels:
+    app.kubernetes.io/name: ztunnel
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+  annotations: {}
+spec:
+  updateStrategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: ztunnel
+  template:
+    metadata:
+      labels:
+        sidecar.istio.io/inject: "false"
+        istio.io/dataplane-mode: none
+        app: ztunnel
+        app.kubernetes.io/name: ztunnel
+        app.kubernetes.io/instance: istio
+        app.kubernetes.io/part-of: istio
+        app.kubernetes.io/version: 1.30.4
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+      annotations:
+        sidecar.istio.io/inject: "false"
+        prometheus.io/port: "15020"
+        prometheus.io/scrape: "true"
+    spec:
+      nodeSelector:
+        kubernetes.io/os: linux
+      serviceAccountName: ztunnel
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      containers:
+        - name: istio-proxy
+          image: registry.istio.io/release/ztunnel:1.30.4-distroless
+          ports:
+            - containerPort: 15020
+              name: ztunnel-stats
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              memory: 1024Mi
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: false
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN
+                - SYS_ADMIN
+                - NET_RAW
+            readOnlyRootFilesystem: true
+            runAsGroup: 1337
+            runAsNonRoot: false
+            runAsUser: 0
+          readinessProbe:
+            httpGet:
+              port: 15021
+              path: /healthz/ready
+          args:
+            - proxy
+            - ztunnel
+          env:
+            - name: CA_ADDRESS
+              value: istiod.nukleros-service-mesh-system.svc:15012
+            - name: XDS_ADDRESS
+              value: istiod.nukleros-service-mesh-system.svc:15012
+            - name: RUST_LOG
+              value: info
+            - name: RUST_BACKTRACE
+              value: "1"
+            - name: ISTIO_META_CLUSTER_ID
+              value: Kubernetes
+            - name: INPOD_ENABLED
+              value: "true"
+            - name: TERMINATION_GRACE_PERIOD_SECONDS
+              value: "30"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: INSTANCE_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+            - name: ISTIO_META_ENABLE_HBONE
+              value: "true"
+            - name: ZTUNNEL_CPU_LIMIT
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: "1"
+          volumeMounts:
+            - mountPath: /var/run/secrets/istio
+              name: istiod-ca-cert
+            - mountPath: /var/run/secrets/tokens
+              name: istio-token
+            - mountPath: /var/run/ztunnel
+              name: cni-ztunnel-sock-dir
+            - mountPath: /tmp
+              name: tmp
+      priorityClassName: system-node-critical
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: istio-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: istio-token
+                  expirationSeconds: 43200
+                  audience: istio-ca
+        - name: istiod-ca-cert
+          configMap:
+            name: istio-ca-root-cert
+        - name: cni-ztunnel-sock-dir
+          hostPath:
+            path: /var/run/ztunnel
+            type: DirectoryOrCreate
+        - name: tmp
+          emptyDir: {}
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/base/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/cni/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/configmap-jwks.yaml
+# Not created if istiod is running remotely
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/poddisruptionbudget.yaml
+# Not created if istiod is running remotely
+# a workaround for https://github.com/kubernetes/kubernetes/issues/93476
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/remote-istiod-service.yaml
+# This file is only used for remote
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-mwc.yaml
+# Adapted from istio-discovery/templates/mutatingwebhook.yaml
+# Removed paths for legacy and default selectors since a revision tag
+# is inherently created from a specific revision
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-svc.yaml
+# Adapted from istio-discovery/templates/service.yaml
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/validatingadmissionpolicy.yaml
+# Created if this is not a remote istiod, OR if it is and is also a config cluster
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/mutatingwebhook.yaml
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.

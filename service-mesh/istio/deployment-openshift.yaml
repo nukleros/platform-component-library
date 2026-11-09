@@ -1,0 +1,344 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Pilot
+    istio: pilot
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  strategy:
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 25%
+  selector:
+    matchLabels:
+      istio: pilot
+  template:
+    metadata:
+      labels:
+        app: istiod
+        istio.io/rev: default
+        install.operator.istio.io/owning-resource: unknown
+        sidecar.istio.io/inject: "false"
+        operator.istio.io/component: Pilot
+        istio: pilot
+        istio.io/dataplane-mode: none
+        app.kubernetes.io/name: istiod
+        app.kubernetes.io/instance: istio
+        app.kubernetes.io/part-of: istio
+        app.kubernetes.io/version: 1.30.4
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+      annotations:
+        prometheus.io/port: "15014"
+        prometheus.io/scrape: "true"
+        sidecar.istio.io/inject: "false"
+    spec:
+      tolerations:
+        - key: cni.istio.io/not-ready
+          operator: Exists
+      serviceAccountName: istiod
+      containers:
+        - name: discovery
+          image: registry.istio.io/release/pilot:1.30.4-distroless
+          args:
+            - discovery
+            - --monitoringAddr=:15014
+            - --log_output_level=default:info
+            - --domain
+            - cluster.local
+            - --keepaliveMaxServerConnectionAge
+            - 30m
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+              name: http-debug
+            - containerPort: 15010
+              protocol: TCP
+              name: grpc-xds
+            - containerPort: 15012
+              protocol: TCP
+              name: tls-xds
+            - containerPort: 15017
+              protocol: TCP
+              name: https-webhooks
+            - containerPort: 15014
+              protocol: TCP
+              name: http-monitoring
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8080
+            initialDelaySeconds: 1
+            periodSeconds: 3
+            timeoutSeconds: 5
+          env:
+            - name: REVISION
+              value: default
+            - name: PILOT_CERT_PROVIDER
+              value: istiod
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.serviceAccountName
+            - name: KUBECONFIG
+              value: /var/run/secrets/remote/config
+            - name: CA_TRUSTED_NODE_ACCOUNTS
+              value: nukleros-service-mesh-system/ztunnel
+            - name: PILOT_ENABLE_AMBIENT
+              value: "true"
+            - name: PILOT_TRACE_SAMPLING
+              value: "1"
+            - name: PILOT_ENABLE_ANALYSIS
+              value: "false"
+            - name: CLUSTER_ID
+              value: Kubernetes
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu
+                  divisor: "1"
+            - name: PLATFORM
+              value: openshift
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2048Mi
+            limits:
+              cpu: 1000m
+              memory: 2048Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+          volumeMounts:
+            - name: istio-token
+              mountPath: /var/run/secrets/tokens
+              readOnly: true
+            - name: local-certs
+              mountPath: /var/run/secrets/istio-dns
+            - name: cacerts
+              mountPath: /etc/cacerts
+              readOnly: true
+            - name: istio-kubeconfig
+              mountPath: /var/run/secrets/remote
+              readOnly: true
+            - name: istio-csr-dns-cert
+              mountPath: /var/run/secrets/istiod/tls
+              readOnly: true
+            - name: istio-csr-ca-configmap
+              mountPath: /var/run/secrets/istiod/ca
+              readOnly: true
+      volumes:
+        - emptyDir:
+            medium: Memory
+          name: local-certs
+        - name: istio-token
+          projected:
+            sources:
+              - serviceAccountToken:
+                  audience: istio-ca
+                  expirationSeconds: 43200
+                  path: istio-token
+        - name: cacerts
+          secret:
+            secretName: cacerts
+            optional: true
+        - name: istio-kubeconfig
+          secret:
+            secretName: istio-kubeconfig
+            optional: true
+        - name: istio-csr-dns-cert
+          secret:
+            secretName: istiod-tls
+            optional: true
+        - name: istio-csr-ca-configmap
+          configMap:
+            name: istio-ca-root-cert
+            defaultMode: 420
+            optional: true
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - istiod
+      nodeSelector:
+        kubernetes.io/os: linux
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/base/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/cni/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/configmap-jwks.yaml
+# Not created if istiod is running remotely
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/poddisruptionbudget.yaml
+# Not created if istiod is running remotely
+# a workaround for https://github.com/kubernetes/kubernetes/issues/93476
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/remote-istiod-service.yaml
+# This file is only used for remote
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-mwc.yaml
+# Adapted from istio-discovery/templates/mutatingwebhook.yaml
+# Removed paths for legacy and default selectors since a revision tag
+# is inherently created from a specific revision
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/revision-tags-svc.yaml
+# Adapted from istio-discovery/templates/service.yaml
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/validatingadmissionpolicy.yaml
+# Created if this is not a remote istiod, OR if it is and is also a config cluster
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/zzz_profile.yaml
+#  Flatten globals, if defined on a per-chart basis
+---
+metadata:
+  labels:
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  template:
+    metadata:
+      labels:
+        platform.nukleros.io/category: service-mesh
+        platform.nukleros.io/project: istio
+
+# Source: ambient/charts/istiod/templates/mutatingwebhook.yaml
+# TODO BML istiodRemote.injectionURL is invalid to set if `istiodRemote.enabled` is false, we should express that.

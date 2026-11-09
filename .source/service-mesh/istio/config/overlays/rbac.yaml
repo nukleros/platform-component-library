@@ -1,0 +1,84 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+yamlFiles:
+  - name: "istio rbac"
+    path: "../../vendor/istio.yaml"
+    outputPath: "service-mesh/istio/rbac.yaml"
+    overlays:
+      - name: "ensure we are only acting upon rbac resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ServiceAccount")]
+              - query: $[?($.kind != "Role")]
+              - query: $[?($.kind != "RoleBinding")]
+              - query: $[?($.kind != "ClusterRole")]
+              - query: $[?($.kind != "ClusterRoleBinding")]
+
+      - name: "ensure namespace is updated (no-op on the cluster-scoped ClusterRole/ClusterRoleBinding, which correctly have none)"
+        query:
+          - metadata.namespace
+          - subjects[*].namespace
+        value: "{{ .namespace }}"
+
+      # NOTE: upstream suffixes these cluster-scoped names with the release namespace, which
+      #       renders as 'default' because the download script does not pass --namespace.
+      - name: "ensure istiod cluster role name is suffixed with the namespace"
+        query: metadata.name
+        value: "istiod-clusterrole-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod-clusterrole-default")]
+
+      - name: "ensure istiod cluster role reference is suffixed with the namespace"
+        query: roleRef.name
+        value: "istiod-clusterrole-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.roleRef.name == "istiod-clusterrole-default")]
+
+      - name: "ensure istiod gateway controller cluster role name is suffixed with the namespace"
+        query: metadata.name
+        value: "istiod-gateway-controller-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod-gateway-controller-default")]
+
+      - name: "ensure istiod gateway controller cluster role reference is suffixed with the namespace"
+        query: roleRef.name
+        value: "istiod-gateway-controller-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.roleRef.name == "istiod-gateway-controller-default")]
+
+      - name: "ensure istio reader cluster role name is suffixed with the namespace"
+        query: metadata.name
+        value: "istio-reader-clusterrole-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istio-reader-clusterrole-default")]
+
+      - name: "ensure istio reader cluster role reference is suffixed with the namespace"
+        query: roleRef.name
+        value: "istio-reader-clusterrole-{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.roleRef.name == "istio-reader-clusterrole-default")]

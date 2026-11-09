@@ -1,0 +1,45 @@
+# Summary
+
+For Istio, you cannot simply run `kubectl apply -f service-mesh/istio/`.  This is because the
+directory contains platform-specific variants of some manifests (suffixed with the platform name),
+and applying all of them would apply conflicting versions of the same resources.
+
+Apply the shared manifests, plus either the generic or the platform-specific version of the rest:
+
+| Manifest | Generic (EKS, AKS, kind, etc.) | GKE | OpenShift |
+|---|---|---|---|
+| `crds.yaml`, `service.yaml`, `webhook.yaml`, `horizontalpodautoscaler.yaml` | yes | yes | yes |
+| `config` | `config.yaml` | `config-gke.yaml` | `config-openshift.yaml` |
+| `daemonset` | `daemonset.yaml` | `daemonset-gke.yaml` | `daemonset-openshift.yaml` |
+| `deployment` | `deployment.yaml` | `deployment-gke.yaml` | `deployment-openshift.yaml` |
+| `rbac` | `rbac.yaml` | `rbac.yaml` | `rbac-openshift.yaml` |
+| additional | | `resourcequota-gke.yaml` | `networkattachmentdefinition-openshift.yaml` |
+
+### GKE
+
+```bash
+cd service-mesh/istio
+kubectl apply \
+  -f crds.yaml -f config-gke.yaml -f rbac.yaml -f service.yaml -f webhook.yaml \
+  -f deployment-gke.yaml -f horizontalpodautoscaler.yaml -f daemonset-gke.yaml \
+  -f resourcequota-gke.yaml
+```
+
+### OpenShift
+
+```bash
+cd service-mesh/istio
+kubectl apply \
+  -f crds.yaml -f config-openshift.yaml -f rbac-openshift.yaml -f service.yaml -f webhook.yaml \
+  -f deployment-openshift.yaml -f horizontalpodautoscaler.yaml -f daemonset-openshift.yaml \
+  -f networkattachmentdefinition-openshift.yaml
+```
+
+### Generic (EKS, AKS, kind, etc.)
+
+```bash
+cd service-mesh/istio
+kubectl apply \
+  -f crds.yaml -f config.yaml -f rbac.yaml -f service.yaml -f webhook.yaml \
+  -f deployment.yaml -f horizontalpodautoscaler.yaml -f daemonset.yaml
+```

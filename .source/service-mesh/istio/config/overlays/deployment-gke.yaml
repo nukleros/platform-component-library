@@ -1,0 +1,84 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+    action: delete
+
+yamlFiles:
+  - name: "istio deployments (gke)"
+    path: "../../vendor/istio-gke.yaml"
+    outputPath: "service-mesh/istio/deployment-gke.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployment resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      - name: "ensure istiod resources are updated"
+        query: spec.template.spec.containers[*]
+        value:
+          resources:
+            requests:
+              cpu: "{{ .istiod.resources.requests.cpu }}"
+              memory: "{{ .istiod.resources.requests.memory }}"
+            limits:
+              cpu: "{{ .istiod.resources.limits.cpu }}"
+              memory: "{{ .istiod.resources.limits.memory }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod")]
+
+      # NOTE: replicas are deliberately not set here, as istiod is scaled by its
+      #       HorizontalPodAutoscaler (see horizontalpodautoscaler.yaml).
+      - name: "ensure other istiod changes are made"
+        query: spec
+        action: merge
+        value:
+          template:
+            spec:
+              affinity:
+                podAntiAffinity:
+                  preferredDuringSchedulingIgnoredDuringExecution:
+                    - weight: 100
+                      podAffinityTerm:
+                        topologyKey: kubernetes.io/hostname
+                        labelSelector:
+                          matchExpressions:
+                            - key: app
+                              operator: In
+                              values:
+                                - istiod
+              nodeSelector:
+                kubernetes.io/os: linux
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod")]
