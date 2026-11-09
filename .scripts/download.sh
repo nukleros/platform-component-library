@@ -49,8 +49,44 @@ if [ -d ${PROJECT_DIR}/vendor-helm ]; then
         VALUES_HELM=${PROJECT_DIR}/vendor-helm/values.yaml
     fi
 
-    helm template ${PROJECT} ${PROJECT_DIR}/vendor-helm \
-        --include-crds \
-        --kube-version '1.36.1' \
-        --values ${VALUES_HELM} | tee ${PROJECT_DIR}/vendor/${PROJECT}.yaml
+    # drop documents which contain only comments (e.g. helm templates which render no
+    # resources).  yot treats these as empty documents, and the common overlays inject
+    # labels into them, producing label-only documents in the output.
+    strip_empty_documents() {
+        awk '
+            /^---[ \t]*$/ { if (keep) printf "%s", doc; doc = $0 "\n"; keep = 0; next }
+            { doc = doc $0 "\n"; if ($0 !~ /^[ \t]*(#.*)?$/) keep = 1 }
+            END { if (keep) printf "%s", doc }
+        '
+    }
+
+    # USAGE: helm_template <output file> <values file> [<values file>...]
+    helm_template() {
+        OUTPUT=$1
+        shift
+
+        VALUES_ARGS=""
+        for VALUES in "$@"; do
+            VALUES_ARGS="${VALUES_ARGS} --values ${VALUES}"
+        done
+
+        helm template ${PROJECT} ${PROJECT_DIR}/vendor-helm \
+            --include-crds \
+            --kube-version '1.36.1' \
+            ${VALUES_ARGS} | strip_empty_documents | tee ${OUTPUT}
+    }
+
+    helm_template ${PROJECT_DIR}/vendor/${PROJECT}.yaml ${VALUES_HELM}
+
+    # template a platform-specific variant for each values-helm-<platform>.yaml, layered
+    # on top of the base values so it only needs to contain the platform overrides
+    # (e.g. config/values-helm-gke.yaml produces vendor/<project>-gke.yaml)
+    for VALUES_PLATFORM in ${PROJECT_DIR}/config/values-helm-*.yaml; do
+        [ -f "${VALUES_PLATFORM}" ] || continue
+
+        PLATFORM=$(basename ${VALUES_PLATFORM} .yaml)
+        PLATFORM=${PLATFORM#values-helm-}
+
+        helm_template ${PROJECT_DIR}/vendor/${PROJECT}-${PLATFORM}.yaml ${VALUES_HELM} ${VALUES_PLATFORM}
+    done
 fi
