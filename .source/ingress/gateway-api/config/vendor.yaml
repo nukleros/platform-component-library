@@ -1,0 +1,11 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.30.0
+directories:
+  # NOTE: standard channel only.  the experimental channel is deliberately excluded.
+  - path: .source/ingress/gateway-api/vendor
+    contents:
+      - path: ./
+        http:
+          url: https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.7.0/standard-install.yaml

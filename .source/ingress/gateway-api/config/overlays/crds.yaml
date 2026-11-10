@@ -1,0 +1,21 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+yamlFiles:
+  - name: "gateway-api custom resource definitions"
+    path: "../../vendor/standard-install.yaml"
+    outputPath: "ingress/gateway-api/crds.yaml"
+    overlays:
+      - name: "ensure we are only acting upon crds"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "CustomResourceDefinition")]
