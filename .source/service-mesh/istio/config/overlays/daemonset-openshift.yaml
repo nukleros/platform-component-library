@@ -47,20 +47,7 @@ yamlFiles:
         query: metadata.namespace
         value: "{{ .namespace }}"
 
-      - name: "ensure cni resources are updated"
-        query: spec.template.spec.containers[*]
-        value:
-          resources:
-            requests:
-              cpu: "{{ .cni.resources.requests.cpu }}"
-              memory: "{{ .cni.resources.requests.memory }}"
-            limits:
-              cpu: "{{ .cni.resources.limits.cpu }}"
-              memory: "{{ .cni.resources.limits.memory }}"
-        documentQuery:
-          - conditions:
-              - query: $[?($.metadata.name == "istio-cni-node")]
-
+      # NOTE: resources are deliberately not set here, as they are set via values-helm.yaml.
       - name: "ensure other cni changes are made"
         query: spec
         action: merge
@@ -72,19 +59,6 @@ yamlFiles:
         documentQuery:
           - conditions:
               - query: $[?($.metadata.name == "istio-cni-node")]
-
-      - name: "ensure ztunnel resources are updated"
-        query: spec.template.spec.containers[*]
-        value:
-          resources:
-            requests:
-              cpu: "{{ .ztunnel.resources.requests.cpu }}"
-              memory: "{{ .ztunnel.resources.requests.memory }}"
-            limits:
-              memory: "{{ .ztunnel.resources.limits.memory }}"
-        documentQuery:
-          - conditions:
-              - query: $[?($.metadata.name == "ztunnel")]
 
       - name: "ensure other ztunnel changes are made"
         query: spec

@@ -143,9 +143,6 @@ spec:
             requests:
               cpu: 100m
               memory: 100Mi
-            limits:
-              cpu: 200m
-              memory: 256Mi
       volumes:
         - name: cni-bin-dir
           hostPath:
@@ -229,8 +226,6 @@ spec:
             requests:
               cpu: 200m
               memory: 512Mi
-            limits:
-              memory: 1024Mi
           securityContext:
             allowPrivilegeEscalation: true
             privileged: false

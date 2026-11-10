@@ -13,6 +13,14 @@ global:
   variant: "distroless"
   istioNamespace: "nukleros-service-mesh-system"
 
+  # structured logs for log aggregation (istiod, cni, ztunnel and any injected proxies)
+  logAsJson: true
+
+  # NOTE: these restrict ingress to the ports each component serves and allow all egress.
+  #       they are only enforced on clusters running a network policy capable cni.
+  networkPolicy:
+    enabled: true
+
   # NOTE: 'gke' is required on GKE.  it leaves cniBinDir empty so the chart autodetects
   #       GKE's nonstandard CNI binary path, and it creates the ResourceQuota that GKE
   #       requires before a pod may use the system-node-critical priority class (which
@@ -36,12 +44,64 @@ istiod:
     defaultConfig:
       discoveryAddress: "istiod.nukleros-service-mesh-system.svc:15012"
 
+  # NOTE: cpu limits are deliberately omitted on all components to avoid cpu throttling.
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2048Mi"
+    limits:
+      memory: "2048Mi"
+
+  # NOTE: replicas are managed by the HorizontalPodAutoscaler.  autoscaleMin must be greater
+  #       than 1 for the chart to render the PodDisruptionBudget.
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+
+  # NOTE: AlwaysAllow lets a node drain evict istiod pods which are not ready (e.g. crash
+  #       looping), rather than blocking the drain on them.
+  pdb:
+    minAvailable: 1
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
+
+  # prefer spreading istiod replicas across nodes
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app: "istiod"
+
+  # NOTE: prefer spreading istiod replicas across zones.  topology.kubernetes.io/zone is a
+  #       well-known label which every major cloud sets on its nodes with its own zone names,
+  #       so no zones are named here.  ScheduleAnyway makes this a preference, so it is a
+  #       no-op on single zone clusters or nodes without the label rather than leaving pods
+  #       pending.
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: "ScheduleAnyway"
+      labelSelector:
+        matchLabels:
+          app: "istiod"
+
 # node agent that configures ambient redirection.  this is what lets workload pods run
 # without NET_ADMIN, as the CNI plugin replaces the privileged istio-init container pattern.
 cni:
   profile: "ambient"
   seccompProfile:
     type: "RuntimeDefault"
+
+  # NOTE: see the istiod resources note above.
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      memory: "256Mi"
 
   # NOTE: required on GKE, which only admits pods using the system-node-critical priority class
   #       (which the cni agent and ztunnel both use) in a namespace with a matching
@@ -60,6 +120,16 @@ ztunnel:
   profile: "ambient"
   resourceName: "ztunnel"
   istioNamespace: "nukleros-service-mesh-system"
+
+  # NOTE: see the istiod resources note above.  this matters most for ztunnel, which carries
+  #       all meshed traffic on its node, so throttling it adds latency to every enrolled
+  #       workload on that node.
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      memory: "1024Mi"
 
   # NOTE: see the cni resourceQuotas note above.
   resourceQuotas:

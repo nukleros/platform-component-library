@@ -126,9 +126,6 @@ spec:
             requests:
               cpu: 500m
               memory: 2048Mi
-            limits:
-              cpu: 1000m
-              memory: 2048Mi
           securityContext:
             allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
@@ -184,17 +181,5 @@ spec:
             name: istio-ca-root-cert
             defaultMode: 420
             optional: true
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                topologyKey: kubernetes.io/hostname
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values:
-                        - istiod
       nodeSelector:
         kubernetes.io/os: linux

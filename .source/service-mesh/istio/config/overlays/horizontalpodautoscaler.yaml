@@ -32,13 +32,3 @@ yamlFiles:
       - name: "ensure namespace is updated"
         query: metadata.namespace
         value: "{{ .namespace }}"
-
-      - name: "ensure istiod replicas are updated"
-        query: spec
-        action: merge
-        value:
-          minReplicas: !!int {{ .istiod.autoscaling.minReplicas }}
-          maxReplicas: !!int {{ .istiod.autoscaling.maxReplicas }}
-        documentQuery:
-          - conditions:
-              - query: $[?($.metadata.name == "istiod")]

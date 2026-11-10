@@ -43,40 +43,15 @@ yamlFiles:
         query: metadata.namespace
         value: "{{ .namespace }}"
 
-      - name: "ensure istiod resources are updated"
-        query: spec.template.spec.containers[*]
-        value:
-          resources:
-            requests:
-              cpu: "{{ .istiod.resources.requests.cpu }}"
-              memory: "{{ .istiod.resources.requests.memory }}"
-            limits:
-              cpu: "{{ .istiod.resources.limits.cpu }}"
-              memory: "{{ .istiod.resources.limits.memory }}"
-        documentQuery:
-          - conditions:
-              - query: $[?($.metadata.name == "istiod")]
-
-      # NOTE: replicas are deliberately not set here, as istiod is scaled by its
-      #       HorizontalPodAutoscaler (see horizontalpodautoscaler.yaml).
+      # NOTE: replicas, resources, affinity and topology spread constraints are deliberately not
+      #       set here, as they are set via values-helm.yaml (replicas by the
+      #       HorizontalPodAutoscaler).
       - name: "ensure other istiod changes are made"
         query: spec
         action: merge
         value:
           template:
             spec:
-              affinity:
-                podAntiAffinity:
-                  preferredDuringSchedulingIgnoredDuringExecution:
-                    - weight: 100
-                      podAffinityTerm:
-                        topologyKey: kubernetes.io/hostname
-                        labelSelector:
-                          matchExpressions:
-                            - key: app
-                              operator: In
-                              values:
-                                - istiod
               nodeSelector:
                 kubernetes.io/os: linux
         documentQuery:
