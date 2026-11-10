@@ -15,9 +15,24 @@ Apply the shared manifests, plus either the generic or the platform-specific ver
 | `rbac` | `rbac.yaml` | `rbac.yaml` | `rbac-openshift.yaml` |
 | additional | | | `networkattachmentdefinition-openshift.yaml` |
 
+## Deploy Script
+
+A deploy script is available which creates the namespace and applies the correct manifests for a
+platform (one of `gke`, `openshift`, `generic`).  Run it from the root of the repository:
+
+```bash
+make deploy CATEGORY=service-mesh PROJECT=istio PLATFORM=gke
+```
+
+## Manual Install
+
+Create the namespace first, then apply the manifests for your platform.
+
 ### GKE
 
 ```bash
+kubectl create ns nukleros-service-mesh-system --dry-run=client -o yaml | kubectl apply -f -
+
 cd service-mesh/istio
 kubectl apply \
   -f crds.yaml -f config-gke.yaml -f rbac.yaml -f service.yaml -f webhook.yaml \
@@ -28,6 +43,8 @@ kubectl apply \
 ### OpenShift
 
 ```bash
+kubectl create ns nukleros-service-mesh-system --dry-run=client -o yaml | kubectl apply -f -
+
 cd service-mesh/istio
 kubectl apply \
   -f crds.yaml -f config-openshift.yaml -f rbac-openshift.yaml -f service.yaml -f webhook.yaml \
@@ -39,6 +56,8 @@ kubectl apply \
 ### Generic (EKS, AKS, kind, etc.)
 
 ```bash
+kubectl create ns nukleros-service-mesh-system --dry-run=client -o yaml | kubectl apply -f -
+
 cd service-mesh/istio
 kubectl apply \
   -f crds.yaml -f config.yaml -f rbac.yaml -f service.yaml -f webhook.yaml \
