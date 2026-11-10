@@ -87,6 +87,7 @@ spec:
             - install-cni
           args:
             - --log_output_level=info
+            - --log_as_json
           envFrom:
             - configMapRef:
                 name: istio-cni-config
@@ -140,6 +141,8 @@ spec:
             - mountPath: /var/run/ztunnel
               name: cni-ztunnel-sock-dir
           resources:
+            limits:
+              memory: 256Mi
             requests:
               cpu: 100m
               memory: 100Mi
@@ -223,6 +226,8 @@ spec:
               name: ztunnel-stats
               protocol: TCP
           resources:
+            limits:
+              memory: 1024Mi
             requests:
               cpu: 200m
               memory: 512Mi
@@ -254,6 +259,8 @@ spec:
               value: istiod.nukleros-service-mesh-system.svc:15012
             - name: XDS_ADDRESS
               value: istiod.nukleros-service-mesh-system.svc:15012
+            - name: LOG_FORMAT
+              value: json
             - name: RUST_LOG
               value: info
             - name: RUST_BACKTRACE

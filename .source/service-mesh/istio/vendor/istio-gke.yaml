@@ -1,4 +1,151 @@
 ---
+# Source: ambient/charts/cni/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istio-cni
+  namespace: default
+  labels:
+    k8s-app: istio-cni-node
+    release: istio
+    istio.io/rev: "default"
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: "Cni"
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "istio"
+    app.kubernetes.io/part-of: "istio"
+    app.kubernetes.io/version: "1.30.4"
+    helm.sh/chart: cni-1.30.4
+spec:
+  podSelector:
+    matchLabels:
+      k8s-app: istio-cni-node
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Metrics endpoint for monitoring/prometheus
+  - ports:
+    - protocol: TCP
+      port: 15014
+  # Readiness probe endpoint
+  - ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  # Allow DNS resolution and access to Kubernetes API server.
+  # IP/Port of the API server is heavily dependant on k8s distribution, so we allow all egress for now.
+  - {}
+---
+# Source: ambient/charts/istiod/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istiod
+  namespace: default
+  labels:
+    app: istiod
+    istio.io/rev: "default"
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: "Pilot"
+    istio: pilot
+    release: istio
+    app.kubernetes.io/name: "istiod"
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "istio"
+    app.kubernetes.io/part-of: "istio"
+    app.kubernetes.io/version: "1.30.4"
+    helm.sh/chart: istiod-1.30.4
+spec:
+  podSelector:
+    matchLabels:
+      app: istiod
+      istio.io/rev: "default"
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Webhook from kube-apiserver
+  - ports:
+    - protocol: TCP
+      port: 15017
+  # xDS from potentially anywhere
+  - ports:
+    - protocol: TCP
+      port: 15010
+    - protocol: TCP
+      port: 15011
+    - protocol: TCP
+      port: 15012
+    - protocol: TCP
+      port: 8080
+    - protocol: TCP
+      port: 15014
+  # Allow all egress (needed because features like JWKS require connections to user-defined endpoints)
+  egress:
+  - {}
+---
+# Source: ambient/charts/ztunnel/templates/networkpolicy.yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ztunnel
+  namespace: default
+  labels:
+    app: ztunnel
+    app.kubernetes.io/name: ztunnel
+    istio.io/rev: "default"
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: "Ztunnel"
+    release: istio
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "istio"
+    app.kubernetes.io/part-of: "istio"
+    app.kubernetes.io/version: "1.30.4"
+    helm.sh/chart: ztunnel-1.30.4
+spec:
+  podSelector:
+    matchLabels:
+      app: ztunnel
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Readiness probe
+  - ports:
+    - protocol: TCP
+      port: 15021
+  # Monitoring/prometheus
+  - ports:
+    - protocol: TCP
+      port: 15020  # Metrics
+  # Admin interface
+  - ports:
+    - protocol: TCP
+      port: 15000  # Admin interface
+  # HBONE traffic
+  - ports:
+    - protocol: TCP
+      port: 15008
+  # Outbound traffic endpoint
+  - ports:
+    - protocol: TCP
+      port: 15001
+  # Traffic endpoint for inbound plaintext
+  - ports:
+    - protocol: TCP
+      port: 15006
+  # DNS Captures
+  - ports:
+    - protocol: TCP
+      port: 15053
+    - protocol: UDP
+      port: 15053
+  egress:
+  # Allow all egress
+  - {}
+---
 # Source: ambient/charts/cni/templates/resourcequota.yaml
 apiVersion: v1
 kind: ResourceQuota
@@ -45,6 +192,35 @@ spec:
       scopeName: PriorityClass
       values:
       - system-node-critical
+---
+# Source: ambient/charts/istiod/templates/poddisruptionbudget.yaml
+# Not created if istiod is running remotely
+# a workaround for https://github.com/kubernetes/kubernetes/issues/93476
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: istiod
+  namespace: default
+  labels:
+    app: istiod
+    istio.io/rev: "default"
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: "Pilot"
+    release: istio
+    istio: pilot
+    app.kubernetes.io/name: "istiod"
+    app.kubernetes.io/managed-by: "Helm"
+    app.kubernetes.io/instance: "istio"
+    app.kubernetes.io/part-of: "istio"
+    app.kubernetes.io/version: "1.30.4"
+    helm.sh/chart: istiod-1.30.4
+spec:
+  minAvailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  selector:
+    matchLabels:
+      app: istiod
+      istio: pilot
 ---
 # Source: ambient/charts/base/templates/reader-serviceaccount.yaml
 # This singleton service account aggregates reader permissions for the revisions in a given cluster
@@ -179,9 +355,33 @@ metadata:
 data:
   original-values: |-
     {
+      "affinity": {
+        "podAntiAffinity": {
+          "preferredDuringSchedulingIgnoredDuringExecution": [
+            {
+              "podAffinityTerm": {
+                "labelSelector": {
+                  "matchLabels": {
+                    "app": "istiod"
+                  }
+                },
+                "topologyKey": "kubernetes.io/hostname"
+              },
+              "weight": 100
+            }
+          ]
+        }
+      },
+      "autoscaleEnabled": true,
+      "autoscaleMax": 5,
+      "autoscaleMin": 2,
       "enabled": true,
       "global": {
         "istioNamespace": "nukleros-service-mesh-system",
+        "logAsJson": true,
+        "networkPolicy": {
+          "enabled": true
+        },
         "platform": "gke",
         "variant": "distroless"
       },
@@ -190,21 +390,62 @@ data:
           "discoveryAddress": "istiod.nukleros-service-mesh-system.svc:15012"
         }
       },
+      "pdb": {
+        "minAvailable": 1,
+        "unhealthyPodEvictionPolicy": "AlwaysAllow"
+      },
       "pilot": {
         "seccompProfile": {
           "type": "RuntimeDefault"
         }
       },
       "profile": "ambient",
+      "resources": {
+        "limits": {
+          "memory": "2048Mi"
+        },
+        "requests": {
+          "cpu": "500m",
+          "memory": "2048Mi"
+        }
+      },
+      "topologySpreadConstraints": [
+        {
+          "labelSelector": {
+            "matchLabels": {
+              "app": "istiod"
+            }
+          },
+          "maxSkew": 1,
+          "topologyKey": "topology.kubernetes.io/zone",
+          "whenUnsatisfiable": "ScheduleAnyway"
+        }
+      ],
       "trustedZtunnelNamespace": "nukleros-service-mesh-system"
     }
   merged-values: |-
     {
-      "affinity": {},
+      "affinity": {
+        "podAntiAffinity": {
+          "preferredDuringSchedulingIgnoredDuringExecution": [
+            {
+              "podAffinityTerm": {
+                "labelSelector": {
+                  "matchLabels": {
+                    "app": "istiod"
+                  }
+                },
+                "topologyKey": "kubernetes.io/hostname"
+              },
+              "weight": 100
+            }
+          ]
+        }
+      },
       "autoscaleBehavior": {},
       "autoscaleEnabled": true,
       "autoscaleMax": 5,
-      "autoscaleMin": 1,
+      "autoscaleMin": 2,
       "base": {
         "enableIstioConfigCRDs": true
       },
@@ -261,7 +502,7 @@ data:
         "istiod": {
           "enableAnalysis": false
         },
-        "logAsJson": false,
+        "logAsJson": true,
         "logging": {
           "level": "default:info"
         },
@@ -274,7 +515,7 @@ data:
         "nativeNftables": false,
         "network": "",
         "networkPolicy": {
-          "enabled": false
+          "enabled": true
         },
         "omitSidecarInjectorConfigMap": false,
         "operatorManageWebhooks": false,
@@ -393,7 +634,7 @@ data:
       "ownerName": "",
       "pdb": {
         "minAvailable": 1,
-        "unhealthyPodEvictionPolicy": ""
+        "unhealthyPodEvictionPolicy": "AlwaysAllow"
       },
       "pilot": {
         "env": {
@@ -411,6 +652,9 @@ data:
         "enabled": true
       },
       "resources": {
+        "limits": {
+          "memory": "2048Mi"
+        },
         "requests": {
           "cpu": "500m",
           "memory": "2048Mi"
@@ -455,7 +699,18 @@ data:
         }
       },
       "tolerations": [],
-      "topologySpreadConstraints": [],
+      "topologySpreadConstraints": [
+        {
+          "labelSelector": {
+            "matchLabels": {
+              "app": "istiod"
+            }
+          },
+          "maxSkew": 1,
+          "topologyKey": "topology.kubernetes.io/zone",
+          "whenUnsatisfiable": "ScheduleAnyway"
+        }
+      ],
       "traceSampling": 1,
       "trustedZtunnelName": "",
       "trustedZtunnelNamespace": "nukleros-service-mesh-system",
@@ -556,7 +811,7 @@ data:
         "istiod": {
           "enableAnalysis": false
         },
-        "logAsJson": false,
+        "logAsJson": true,
         "logging": {
           "level": "default:info"
         },
@@ -569,7 +824,7 @@ data:
         "nativeNftables": false,
         "network": "",
         "networkPolicy": {
-          "enabled": false
+          "enabled": true
         },
         "omitSidecarInjectorConfigMap": false,
         "operatorManageWebhooks": false,
@@ -22057,6 +22312,7 @@ spec:
           command: ["install-cni"]
           args:
             - --log_output_level=info
+            - --log_as_json
           envFrom:
             - configMapRef:
                 name: istio-cni-config
@@ -22111,6 +22367,8 @@ spec:
               name: cni-ztunnel-sock-dir
             
           resources:
+            limits:
+              memory: 256Mi
             requests:
               cpu: 100m
               memory: 100Mi
@@ -22202,6 +22460,8 @@ spec:
           name: ztunnel-stats
           protocol: TCP
         resources:
+          limits:
+            memory: 1024Mi
           requests:
             cpu: 200m
             memory: 512Mi
@@ -22234,6 +22494,8 @@ spec:
           value: istiod.nukleros-service-mesh-system.svc:15012
         - name: XDS_ADDRESS
           value: istiod.nukleros-service-mesh-system.svc:15012
+        - name: LOG_FORMAT
+          value: json
         - name: RUST_LOG
           value: "info"
         - name: RUST_BACKTRACE
@@ -22350,9 +22612,25 @@ spec:
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - podAffinityTerm:
+              labelSelector:
+                matchLabels:
+                  app: istiod
+              topologyKey: kubernetes.io/hostname
+            weight: 100
       tolerations:
         - key: cni.istio.io/not-ready
           operator: "Exists"
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: istiod
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
       serviceAccountName: istiod
       containers:
         - name: discovery
@@ -22361,6 +22639,7 @@ spec:
           - "discovery"
           - --monitoringAddr=:15014
           - --log_output_level=default:info
+          - --log_as_json
           - --domain
           - cluster.local
           - --keepaliveMaxServerConnectionAge
@@ -22437,6 +22716,8 @@ spec:
           - name: PLATFORM
             value: "gke"
           resources:
+            limits:
+              memory: 2048Mi
             requests:
               cpu: 500m
               memory: 2048Mi
@@ -22521,7 +22802,7 @@ metadata:
     helm.sh/chart: istiod-1.30.4
 spec:
   maxReplicas: 5
-  minReplicas: 1
+  minReplicas: 2
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment

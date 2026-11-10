@@ -67,9 +67,33 @@ metadata:
 data:
   original-values: |-
     {
+      "affinity": {
+        "podAntiAffinity": {
+          "preferredDuringSchedulingIgnoredDuringExecution": [
+            {
+              "podAffinityTerm": {
+                "labelSelector": {
+                  "matchLabels": {
+                    "app": "istiod"
+                  }
+                },
+                "topologyKey": "kubernetes.io/hostname"
+              },
+              "weight": 100
+            }
+          ]
+        }
+      },
+      "autoscaleEnabled": true,
+      "autoscaleMax": 5,
+      "autoscaleMin": 2,
       "enabled": true,
       "global": {
         "istioNamespace": "nukleros-service-mesh-system",
+        "logAsJson": true,
+        "networkPolicy": {
+          "enabled": true
+        },
         "platform": "gke",
         "variant": "distroless"
       },
@@ -78,21 +102,62 @@ data:
           "discoveryAddress": "istiod.nukleros-service-mesh-system.svc:15012"
         }
       },
+      "pdb": {
+        "minAvailable": 1,
+        "unhealthyPodEvictionPolicy": "AlwaysAllow"
+      },
       "pilot": {
         "seccompProfile": {
           "type": "RuntimeDefault"
         }
       },
       "profile": "ambient",
+      "resources": {
+        "limits": {
+          "memory": "2048Mi"
+        },
+        "requests": {
+          "cpu": "500m",
+          "memory": "2048Mi"
+        }
+      },
+      "topologySpreadConstraints": [
+        {
+          "labelSelector": {
+            "matchLabels": {
+              "app": "istiod"
+            }
+          },
+          "maxSkew": 1,
+          "topologyKey": "topology.kubernetes.io/zone",
+          "whenUnsatisfiable": "ScheduleAnyway"
+        }
+      ],
       "trustedZtunnelNamespace": "nukleros-service-mesh-system"
     }
   merged-values: |-
     {
-      "affinity": {},
+      "affinity": {
+        "podAntiAffinity": {
+          "preferredDuringSchedulingIgnoredDuringExecution": [
+            {
+              "podAffinityTerm": {
+                "labelSelector": {
+                  "matchLabels": {
+                    "app": "istiod"
+                  }
+                },
+                "topologyKey": "kubernetes.io/hostname"
+              },
+              "weight": 100
+            }
+          ]
+        }
+      },
       "autoscaleBehavior": {},
       "autoscaleEnabled": true,
       "autoscaleMax": 5,
-      "autoscaleMin": 1,
+      "autoscaleMin": 2,
       "base": {
         "enableIstioConfigCRDs": true
       },
@@ -149,7 +214,7 @@ data:
         "istiod": {
           "enableAnalysis": false
         },
-        "logAsJson": false,
+        "logAsJson": true,
         "logging": {
           "level": "default:info"
         },
@@ -162,7 +227,7 @@ data:
         "nativeNftables": false,
         "network": "",
         "networkPolicy": {
-          "enabled": false
+          "enabled": true
         },
         "omitSidecarInjectorConfigMap": false,
         "operatorManageWebhooks": false,
@@ -281,7 +346,7 @@ data:
       "ownerName": "",
       "pdb": {
         "minAvailable": 1,
-        "unhealthyPodEvictionPolicy": ""
+        "unhealthyPodEvictionPolicy": "AlwaysAllow"
       },
       "pilot": {
         "env": {
@@ -299,6 +364,9 @@ data:
         "enabled": true
       },
       "resources": {
+        "limits": {
+          "memory": "2048Mi"
+        },
         "requests": {
           "cpu": "500m",
           "memory": "2048Mi"
@@ -343,7 +411,18 @@ data:
         }
       },
       "tolerations": [],
-      "topologySpreadConstraints": [],
+      "topologySpreadConstraints": [
+        {
+          "labelSelector": {
+            "matchLabels": {
+              "app": "istiod"
+            }
+          },
+          "maxSkew": 1,
+          "topologyKey": "topology.kubernetes.io/zone",
+          "whenUnsatisfiable": "ScheduleAnyway"
+        }
+      ],
       "traceSampling": 1,
       "trustedZtunnelName": "",
       "trustedZtunnelNamespace": "nukleros-service-mesh-system",
@@ -435,7 +514,7 @@ data:
         "istiod": {
           "enableAnalysis": false
         },
-        "logAsJson": false,
+        "logAsJson": true,
         "logging": {
           "level": "default:info"
         },
@@ -448,7 +527,7 @@ data:
         "nativeNftables": false,
         "network": "",
         "networkPolicy": {
-          "enabled": false
+          "enabled": true
         },
         "omitSidecarInjectorConfigMap": false,
         "operatorManageWebhooks": false,

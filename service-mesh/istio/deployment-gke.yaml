@@ -45,9 +45,25 @@ spec:
         prometheus.io/scrape: "true"
         sidecar.istio.io/inject: "false"
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: istiod
+                topologyKey: kubernetes.io/hostname
+              weight: 100
       tolerations:
         - key: cni.istio.io/not-ready
           operator: Exists
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: istiod
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
       serviceAccountName: istiod
       containers:
         - name: discovery
@@ -56,6 +72,7 @@ spec:
             - discovery
             - --monitoringAddr=:15014
             - --log_output_level=default:info
+            - --log_as_json
             - --domain
             - cluster.local
             - --keepaliveMaxServerConnectionAge
@@ -123,6 +140,8 @@ spec:
             - name: PLATFORM
               value: gke
           resources:
+            limits:
+              memory: 2048Mi
             requests:
               cpu: 500m
               memory: 2048Mi
