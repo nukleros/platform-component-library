@@ -1,0 +1,847 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-reader-service-account
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istio-reader
+    app.kubernetes.io/name: istio-reader
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istio-cni
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istio-cni
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ztunnel
+  namespace: nukleros-service-mesh-system
+  labels:
+    app.kubernetes.io/name: ztunnel
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+  annotations: {}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-cni
+  labels:
+    app: istio-cni
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - nodes
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    resourceNames:
+      - privileged
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-cni-repair-role
+  labels:
+    app: istio-cni
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - watch
+      - get
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-cni-ambient
+  labels:
+    app: istio-cni
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods/status
+    verbs:
+      - patch
+      - update
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+    resourceNames:
+      - istio-cni-node
+    verbs:
+      - get
+
+# Source: ambient/charts/istiod/templates/clusterrole.yaml
+# Created if cluster resources are not omitted
+# Created if this is not a remote istiod, OR if it is and is also a config cluster
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istiod-clusterrole-nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - mutatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+      - patch
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - watch
+      - update
+  - apiGroups:
+      - config.istio.io
+      - security.istio.io
+      - networking.istio.io
+      - authentication.istio.io
+      - rbac.istio.io
+      - telemetry.istio.io
+      - extensions.istio.io
+    verbs:
+      - get
+      - watch
+      - list
+    resources:
+      - '*'
+  - apiGroups:
+      - networking.istio.io
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - workloadentries
+  - apiGroups:
+      - networking.istio.io
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - workloadentries/status
+      - serviceentries/status
+  - apiGroups:
+      - security.istio.io
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - authorizationpolicies/status
+  - apiGroups:
+      - ""
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - services/status
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+      - nodes
+      - services
+      - namespaces
+      - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.k8s.io
+    resources:
+      - ingresses/status
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - create
+      - get
+      - list
+      - watch
+      - update
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+  - apiGroups:
+      - gateway.networking.k8s.io
+      - gateway.networking.x-k8s.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - gateway.networking.x-k8s.io
+    resources:
+      - xbackendtrafficpolicies/status
+    verbs:
+      - update
+      - patch
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - backendtlspolicies/status
+      - gatewayclasses/status
+      - gateways/status
+      - grpcroutes/status
+      - httproutes/status
+      - referencegrants/status
+      - tcproutes/status
+      - tlsroutes/status
+      - udproutes/status
+      - listenersets/status
+    verbs:
+      - update
+      - patch
+  - apiGroups:
+      - gateway.networking.k8s.io
+    resources:
+      - gatewayclasses
+    verbs:
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - inference.networking.k8s.io
+    resources:
+      - inferencepools
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - inference.networking.k8s.io
+    resources:
+      - inferencepools/status
+    verbs:
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - serviceexports
+    verbs:
+      - get
+      - watch
+      - list
+      - create
+      - delete
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - serviceimports
+    verbs:
+      - get
+      - watch
+      - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istiod-gateway-controller-nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - apps
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - deployments
+  - apiGroups:
+      - autoscaling
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - horizontalpodautoscalers
+  - apiGroups:
+      - policy
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - poddisruptionbudgets
+  - apiGroups:
+      - ""
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - services
+  - apiGroups:
+      - ""
+    verbs:
+      - get
+      - watch
+      - list
+      - update
+      - patch
+      - create
+      - delete
+    resources:
+      - serviceaccounts
+
+# Source: ambient/charts/istiod/templates/reader-clusterrole.yaml
+# Created if cluster resources are not omitted. Used for multicluster remote secret workflows.
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-reader-clusterrole-nukleros-service-mesh-system
+  labels:
+    app: istio-reader
+    app.kubernetes.io/name: istio-reader
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - config.istio.io
+      - security.istio.io
+      - networking.istio.io
+      - authentication.istio.io
+      - rbac.istio.io
+      - telemetry.istio.io
+      - extensions.istio.io
+    resources:
+      - '*'
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - endpoints
+      - pods
+      - services
+      - nodes
+      - replicationcontrollers
+      - namespaces
+      - secrets
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - networking.istio.io
+    verbs:
+      - get
+      - watch
+      - list
+    resources:
+      - workloadentries
+  - apiGroups:
+      - networking.x-k8s.io
+      - gateway.networking.k8s.io
+    resources:
+      - gateways
+    verbs:
+      - get
+      - watch
+      - list
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - serviceexports
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+  - apiGroups:
+      - multicluster.x-k8s.io
+    resources:
+      - serviceimports
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - replicasets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - authentication.k8s.io
+    resources:
+      - tokenreviews
+    verbs:
+      - create
+  - apiGroups:
+      - authorization.k8s.io
+    resources:
+      - subjectaccessreviews
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ztunnel
+  labels:
+    app: ztunnel
+    install.operator.istio.io/owning-resource: unknown
+    app.kubernetes.io/name: ztunnel
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+  annotations: {}
+rules:
+  - apiGroups:
+      - security.openshift.io
+    resources:
+      - securitycontextconstraints
+    resourceNames:
+      - privileged
+    verbs:
+      - use
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-cni
+  labels:
+    app: istio-cni
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni
+subjects:
+  - kind: ServiceAccount
+    name: istio-cni
+    namespace: nukleros-service-mesh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-cni-repair-rolebinding
+  labels:
+    k8s-app: istio-cni-repair
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+subjects:
+  - kind: ServiceAccount
+    name: istio-cni
+    namespace: nukleros-service-mesh-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-repair-role
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-cni-ambient
+  labels:
+    k8s-app: istio-cni-repair
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+subjects:
+  - kind: ServiceAccount
+    name: istio-cni
+    namespace: nukleros-service-mesh-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-cni-ambient
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istiod-clusterrole-nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istiod-clusterrole-nukleros-service-mesh-system
+subjects:
+  - kind: ServiceAccount
+    name: istiod
+    namespace: nukleros-service-mesh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istiod-gateway-controller-nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istiod-gateway-controller-nukleros-service-mesh-system
+subjects:
+  - kind: ServiceAccount
+    name: istiod
+    namespace: nukleros-service-mesh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: istio-reader-clusterrole-nukleros-service-mesh-system
+  labels:
+    app: istio-reader
+    app.kubernetes.io/name: istio-reader
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: istio-reader-clusterrole-nukleros-service-mesh-system
+subjects:
+  - kind: ServiceAccount
+    name: istio-reader-service-account
+    namespace: nukleros-service-mesh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: ztunnel
+  labels:
+    app: ztunnel
+    install.operator.istio.io/owning-resource: unknown
+    app.kubernetes.io/name: ztunnel
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+  annotations: {}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: ztunnel
+subjects:
+  - kind: ServiceAccount
+    name: ztunnel
+    namespace: nukleros-service-mesh-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+rules:
+  - apiGroups:
+      - networking.istio.io
+    verbs:
+      - create
+    resources:
+      - gateways
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - get
+      - watch
+      - list
+      - update
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - delete
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - get
+      - update
+      - patch
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: istiod
+subjects:
+  - kind: ServiceAccount
+    name: istiod
+    namespace: nukleros-service-mesh-system

@@ -1,0 +1,25 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Pilot
+    istio: pilot
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  minAvailable: 1
+  unhealthyPodEvictionPolicy: AlwaysAllow
+  selector:
+    matchLabels:
+      app: istiod
+      istio: pilot

@@ -1,0 +1,126 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istio-cni
+  namespace: nukleros-service-mesh-system
+  labels:
+    k8s-app: istio-cni-node
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Cni
+    app.kubernetes.io/name: istio-cni
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  podSelector:
+    matchLabels:
+      k8s-app: istio-cni-node
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 15014
+    - ports:
+        - protocol: TCP
+          port: 8000
+  egress:
+    - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: istiod
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Pilot
+    istio: pilot
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  podSelector:
+    matchLabels:
+      app: istiod
+      istio.io/rev: default
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 15017
+    - ports:
+        - protocol: TCP
+          port: 15010
+        - protocol: TCP
+          port: 15011
+        - protocol: TCP
+          port: 15012
+        - protocol: TCP
+          port: 8080
+        - protocol: TCP
+          port: 15014
+  egress:
+    - {}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ztunnel
+  namespace: nukleros-service-mesh-system
+  labels:
+    app: ztunnel
+    app.kubernetes.io/name: ztunnel
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Ztunnel
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  podSelector:
+    matchLabels:
+      app: ztunnel
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 15021
+    - ports:
+        - protocol: TCP
+          port: 15020
+    - ports:
+        - protocol: TCP
+          port: 15000
+    - ports:
+        - protocol: TCP
+          port: 15008
+    - ports:
+        - protocol: TCP
+          port: 15001
+    - ports:
+        - protocol: TCP
+          port: 15006
+    - ports:
+        - protocol: TCP
+          port: 15053
+        - protocol: UDP
+          port: 15053
+  egress:
+    - {}

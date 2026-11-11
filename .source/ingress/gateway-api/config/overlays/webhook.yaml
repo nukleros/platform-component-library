@@ -1,0 +1,28 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+# NOTE: upstream's safe-upgrades policy rejects installing experimental channel CRDs over the
+#       standard channel, and installing gateway api CRDs older than the vendored release.  it
+#       relies on the gateway.networking.k8s.io/* annotations on the CRDs, which are left as
+#       upstream sets them.
+yamlFiles:
+  - name: "gateway-api webhooks"
+    path: "../../vendor/standard-install.yaml"
+    outputPath: "ingress/gateway-api/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+              - query: $[?($.kind != "ValidatingAdmissionPolicy")]
+              - query: $[?($.kind != "ValidatingAdmissionPolicyBinding")]

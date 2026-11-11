@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: istiod
+  namespace: nukleros-service-mesh-system
+  labels:
+    istio.io/rev: default
+    install.operator.istio.io/owning-resource: unknown
+    operator.istio.io/component: Pilot
+    app: istiod
+    istio: pilot
+    app.kubernetes.io/name: istiod
+    app.kubernetes.io/instance: istio
+    app.kubernetes.io/part-of: istio
+    app.kubernetes.io/version: 1.30.4
+    platform.nukleros.io/category: service-mesh
+    platform.nukleros.io/project: istio
+spec:
+  ports:
+    - port: 15010
+      name: grpc-xds
+      protocol: TCP
+    - port: 15012
+      name: https-dns
+      protocol: TCP
+    - port: 443
+      name: https-webhook
+      targetPort: 15017
+      protocol: TCP
+    - port: 15014
+      name: http-monitoring
+      protocol: TCP
+  selector:
+    app: istiod
+    istio: pilot
+
+# Source: ambient/charts/cni/templates/daemonset.yaml
+# This manifest installs the Istio install-cni container, as well
+# as the Istio CNI plugin and config on
+# each master and worker node in a Kubernetes cluster.
+#
+# $detectedBinDir exists to support a GKE-specific platform override,
+# and is deprecated in favor of using the explicit `gke` platform profile.

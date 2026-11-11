@@ -1,0 +1,37 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+# NOTE: OpenShift runs the istio cni plugin through multus rather than chaining it onto the
+#       primary cni, which requires this NetworkAttachmentDefinition.
+#
+# NOTE: the namespace is deliberately NOT updated.  upstream hardcodes the 'default'
+#       namespace, which multus treats as a global namespace on OpenShift, so pods in every
+#       enrolled namespace can reference it.  moving it into our namespace would make it
+#       unresolvable from the workload namespaces.
+yamlFiles:
+  - name: "istio network attachment definitions (openshift)"
+    path: "../../vendor/istio-openshift.yaml"
+    outputPath: "service-mesh/istio/networkattachmentdefinition-openshift.yaml"
+    overlays:
+      - name: "ensure we are only acting upon network attachment definition resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "NetworkAttachmentDefinition")]

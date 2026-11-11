@@ -1,0 +1,59 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "apply nukleros labels to pod template"
+    query: "spec.template.metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+      - spec.template.metadata.labels["helm.sh/chart"]
+      - spec.template.metadata.labels["app.kubernetes.io/managed-by"]
+    action: delete
+
+yamlFiles:
+  - name: "istio deployments (openshift)"
+    path: "../../vendor/istio-openshift.yaml"
+    outputPath: "service-mesh/istio/deployment-openshift.yaml"
+    overlays:
+      - name: "ensure we are only acting upon deployment resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "Deployment")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      # NOTE: replicas, resources, affinity and topology spread constraints are deliberately not
+      #       set here, as they are set via values-helm.yaml (replicas by the
+      #       HorizontalPodAutoscaler).
+      - name: "ensure other istiod changes are made"
+        query: spec
+        action: merge
+        value:
+          template:
+            spec:
+              nodeSelector:
+                kubernetes.io/os: linux
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "istiod")]

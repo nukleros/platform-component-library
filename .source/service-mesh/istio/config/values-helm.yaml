@@ -1,0 +1,136 @@
+#
+# NOTE: this is the helm values file for the Istio 'ambient' umbrella helm chart, which is
+# vendored in via the vendor.yaml file.  values for each subchart are nested under the
+# subchart name (base, istiod, cni, ztunnel) and values under 'global' apply to all of them.
+#
+# NOTE: the download script does not pass --namespace to 'helm template', so anything the
+# charts derive from .Release.Namespace renders as 'default'.  values which allow the
+# namespace to be overridden are set explicitly here; the rest (metadata.namespace, etc.)
+# must be handled by the overlays.
+#
+global:
+  # distroless images carry no shell or package manager
+  variant: "distroless"
+  istioNamespace: "nukleros-service-mesh-system"
+
+  # structured logs for log aggregation (istiod, cni, ztunnel and any injected proxies)
+  logAsJson: true
+
+  # NOTE: these restrict ingress to the ports each component serves and allow all egress.
+  #       they are only enforced on clusters running a network policy capable cni.
+  networkPolicy:
+    enabled: true
+
+  # NOTE: 'gke' is required on GKE.  it leaves cniBinDir empty so the chart autodetects
+  #       GKE's nonstandard CNI binary path, and it creates the ResourceQuota that GKE
+  #       requires before a pod may use the system-node-critical priority class (which
+  #       ztunnel and the CNI agent both use).  it is left unset here so the manifests
+  #       work on generic clusters.
+  # platform: "gke"
+
+# control plane.  issues the SPIFFE workload certificates that ztunnel presents, each bound
+# to the pod's Kubernetes ServiceAccount.
+#
+# NOTE: profile=ambient is what selects the sidecarless data plane; without it this installs
+#       the sidecar-injection control plane instead.
+istiod:
+  enabled: true
+  profile: "ambient"
+  trustedZtunnelNamespace: "nukleros-service-mesh-system"
+  pilot:
+    seccompProfile:
+      type: "RuntimeDefault"
+  meshConfig:
+    defaultConfig:
+      discoveryAddress: "istiod.nukleros-service-mesh-system.svc:15012"
+
+  # NOTE: cpu limits are deliberately omitted on all components to avoid cpu throttling.
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "2048Mi"
+    limits:
+      memory: "2048Mi"
+
+  # NOTE: replicas are managed by the HorizontalPodAutoscaler.  autoscaleMin must be greater
+  #       than 1 for the chart to render the PodDisruptionBudget.
+  autoscaleEnabled: true
+  autoscaleMin: 2
+  autoscaleMax: 5
+
+  # NOTE: AlwaysAllow lets a node drain evict istiod pods which are not ready (e.g. crash
+  #       looping), rather than blocking the drain on them.
+  pdb:
+    minAvailable: 1
+    unhealthyPodEvictionPolicy: "AlwaysAllow"
+
+  # prefer spreading istiod replicas across nodes
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app: "istiod"
+
+  # NOTE: prefer spreading istiod replicas across zones.  topology.kubernetes.io/zone is a
+  #       well-known label which every major cloud sets on its nodes with its own zone names,
+  #       so no zones are named here.  ScheduleAnyway makes this a preference, so it is a
+  #       no-op on single zone clusters or nodes without the label rather than leaving pods
+  #       pending.
+  topologySpreadConstraints:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: "ScheduleAnyway"
+      labelSelector:
+        matchLabels:
+          app: "istiod"
+
+# node agent that configures ambient redirection.  this is what lets workload pods run
+# without NET_ADMIN, as the CNI plugin replaces the privileged istio-init container pattern.
+cni:
+  profile: "ambient"
+  seccompProfile:
+    type: "RuntimeDefault"
+
+  # NOTE: see the istiod resources note above.
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      memory: "256Mi"
+
+  # NOTE: required on GKE, which only admits pods using the system-node-critical priority class
+  #       (which the cni agent and ztunnel both use) in a namespace with a matching
+  #       ResourceQuota.  enabled for all platforms for consistency, as it is harmless where
+  #       that restriction is not configured.
+  resourceQuotas:
+    enabled: true
+
+# per-node L4 proxy that performs the mTLS.  one pod per node, not one per workload.
+#
+# NOTE: no seccompProfile override here, deliberately.  the ztunnel chart exposes no such
+#       key and an unrecognized key is silently ignored by helm.  ztunnel's securityContext
+#       is fixed by the chart and is privileged by necessity (NET_ADMIN and NET_RAW for
+#       TPROXY, SYS_ADMIN for setns into other pods' network namespaces).
+ztunnel:
+  profile: "ambient"
+  resourceName: "ztunnel"
+  istioNamespace: "nukleros-service-mesh-system"
+
+  # NOTE: see the istiod resources note above.  this matters most for ztunnel, which carries
+  #       all meshed traffic on its node, so throttling it adds latency to every enrolled
+  #       workload on that node.
+  resources:
+    requests:
+      cpu: "200m"
+      memory: "512Mi"
+    limits:
+      memory: "1024Mi"
+
+  # NOTE: see the cni resourceQuotas note above.
+  resourceQuotas:
+    enabled: true

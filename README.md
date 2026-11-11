@@ -35,7 +35,8 @@ Git (e.g. see what changed), and easy to perform with the used tooling.
     * `ServiceAccount`, `Role`, `RoleBinding`, `ClusterRole`, `ClusterRoleBinding` == `rbac.yaml`
     * `ConfigMap`, `Secret`, `ExternalSecret` == `config.yaml`
     * `CustomResourceDefinition` == `crds.yaml`
-    * `MutatingWebhookConfiguration`, `ValidatingWebhookConfiguration` == `webhook.yaml`
+    * `MutatingWebhookConfiguration`, `ValidatingWebhookConfiguration`, `ValidatingAdmissionPolicy`,
+      `ValidatingAdmissionPolicyBinding` == `webhook.yaml`
     * `Certificate`, `Issuer`, `ClusterIssuer` == `certificates.yaml`
     * `Deployment` == `deployment.yaml`
     * `StatefulSet` == `statefulset.yaml`
@@ -46,6 +47,9 @@ Git (e.g. see what changed), and easy to perform with the used tooling.
     * `IngressClass` == `ingress-class.yaml`
     * `NetworkPolicy` == `networkpolicy.yaml`
     * `PodDisruptionBudget` == `poddisruptionbudget.yaml`
+    * `HorizontalPodAutoscaler` == `horizontalpodautoscaler.yaml`
+    * `ResourceQuota` == `resourcequota.yaml`
+    * `NetworkAttachmentDefinition` == `networkattachmentdefinition.yaml`
     * Mutually exclusive variants use a suffix, pick one (e.g. `service-aws.yaml`,
       `service-nodeport.yaml`)
 
