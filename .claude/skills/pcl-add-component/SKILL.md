@@ -94,6 +94,8 @@ is written. These checks are read-only.
    - `vendir` at or above the highest `minimumRequiredVersion` in
      `.source/*/*/config/vendor.yaml`
    - `helm` v3
+   - `kind` v0.24.0 or later. Its default network plugin (kindnet) only enforces
+     NetworkPolicies from that version, and check 6 in step 6 depends on it.
    - `docker` or `podman` (kind runs its nodes as containers), and its engine must be running
      (`docker info` or `podman info`)
 
@@ -288,9 +290,12 @@ before the disruptive ones (6 and 7). Pass any ad-hoc manifest through stdin
 4. The smoke test works end to end.
 5. Webhooks are actually reached: submit something the webhook must reject. Webhooks with
    `failurePolicy: Ignore` fail open silently, so a blocked webhook otherwise looks healthy.
-6. Network policies are enforced (kindnet enforces them). From a throwaway pod
-   (`kubectl run --rm`) in another namespace, run `nc -z` against a port that should be
-   blocked and one that should be open.
+6. Network policies are enforced. kindnet enforces them on kind v0.24.0 or later (checked in
+   step 0). From a throwaway pod (`kubectl run --rm`) in another namespace, run `nc -z`
+   against a port the policies should block and one they should allow. Only report the
+   policies as verified if the blocked port is refused and the allowed port connects. If the
+   blocked port is reachable, policies are either not enforced or the rule is wrong. Report
+   it as a failure, not a pass, and don't claim the policies were tested.
 7. Drain the node running the leader, or a replica of each component. The drain should
    complete, leadership should fail over, and the component should keep serving. Uncordon
    the node afterwards.
