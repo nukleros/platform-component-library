@@ -31,5 +31,6 @@ using the cron scaler:
 
 ```bash
 make test CATEGORY=autoscaling PROJECT=keda
-kubectl -n nukleros-autoscaling-system get scaledobject,hpa,deployment keda-test
+kubectl -n nukleros-autoscaling-system get scaledobject,deployment keda-test
+kubectl -n nukleros-autoscaling-system get hpa "$(kubectl -n nukleros-autoscaling-system get scaledobject keda-test -o jsonpath='{.status.hpaName}')"
 ```
