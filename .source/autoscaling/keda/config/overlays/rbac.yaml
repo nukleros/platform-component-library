@@ -1,0 +1,49 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+yamlFiles:
+  - name: "keda rbac"
+    path: "../../vendor/keda.yaml"
+    outputPath: "autoscaling/keda/rbac.yaml"
+    overlays:
+      - name: "ensure we are only acting upon rbac resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ServiceAccount")]
+              - query: $[?($.kind != "Role")]
+              - query: $[?($.kind != "RoleBinding")]
+              - query: $[?($.kind != "ClusterRole")]
+              - query: $[?($.kind != "ClusterRoleBinding")]
+
+      # NOTE: only references to the release namespace (rendered as 'default') are updated.
+      #       the metrics server is granted the extension-apiserver-authentication-reader role
+      #       by a RoleBinding which must live in kube-system, and the horizontal pod autoscaler
+      #       controller is bound to the external metrics reader role as a kube-system subject.
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.namespace == "default")]
+
+      - name: "ensure subject namespace is updated"
+        query: subjects[?(@.namespace == "default")].namespace
+        value: "{{ .namespace }}"

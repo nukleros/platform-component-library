@@ -1,0 +1,60 @@
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  namespace: nukleros-autoscaling-system
+  name: keda-operator
+  labels:
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: keda-operator
+  unhealthyPodEvictionPolicy: AlwaysAllow
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  namespace: nukleros-autoscaling-system
+  name: keda-operator-metrics-apiserver
+  labels:
+    app.kubernetes.io/name: keda-operator-metrics-apiserver
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: keda-operator-metrics-apiserver
+  unhealthyPodEvictionPolicy: AlwaysAllow
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  namespace: nukleros-autoscaling-system
+  name: keda-admission-webhooks
+  labels:
+    app.kubernetes.io/name: keda-admission-webhooks
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: keda-admission-webhooks
+  unhealthyPodEvictionPolicy: AlwaysAllow

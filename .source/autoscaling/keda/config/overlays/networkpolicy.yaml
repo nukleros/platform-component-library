@@ -1,0 +1,155 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+# NOTE: the upstream rules are replaced, as they only work where the kubernetes api server runs
+#       as a pod.  traffic between the api server and the pods comes from (and goes to) node or
+#       control plane addresses on most clusters, which a namespaceSelector never matches, so:
+#         * the metrics api and webhook ports accept ingress from any source.
+#         * egress to the api server is allowed to any destination on the api server ports
+#           (443 on most managed clusters, 6443 on kind, kubeadm and openshift).
+#
+# NOTE: dns egress is allowed to any destination rather than by pod label, as the dns pod
+#       labels differ between distributions.  5353 is the port the openshift dns pods listen on
+#       behind the dns service.
+#
+# NOTE: the prometheus metrics port (8080) accepts ingress from any pod in the cluster, as
+#       upstream sets it.
+yamlFiles:
+  - name: "keda network policies"
+    path: "../../vendor/keda.yaml"
+    outputPath: "autoscaling/keda/networkpolicy.yaml"
+    overlays:
+      - name: "ensure we are only acting upon network policy resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "NetworkPolicy")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      # NOTE: merging lists appends rather than replaces, so we remove the upstream rules first
+      - name: "remove upstream network policy rules"
+        query:
+          - spec.ingress
+          - spec.egress
+        action: delete
+
+      # NOTE: the operator must be able to reach every scaler source (cloud provider apis,
+      #       message brokers, databases, etc.), which may be anywhere inside or outside the
+      #       cluster, so its egress is not restricted.  its grpc metrics service is only
+      #       consumed by the metrics server.
+      - name: "ensure operator network policy rules are updated"
+        query: spec
+        action: merge
+        value:
+          ingress:
+            - from:
+                - podSelector:
+                    matchLabels:
+                      app: keda-operator-metrics-apiserver
+              ports:
+                - protocol: TCP
+                  port: 9666
+            - from:
+                - namespaceSelector: {}
+              ports:
+                - protocol: TCP
+                  port: 8080
+          egress:
+            - {}
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "keda-operator")]
+
+      # NOTE: the metrics server only talks to the api server and to the operator grpc metrics
+      #       service.  it never contacts the scaler sources directly.
+      - name: "ensure metrics server network policy rules are updated"
+        query: spec
+        action: merge
+        value:
+          ingress:
+            - ports:
+                - protocol: TCP
+                  port: 6443
+            - from:
+                - namespaceSelector: {}
+              ports:
+                - protocol: TCP
+                  port: 8080
+          egress:
+            - ports:
+                - protocol: UDP
+                  port: 53
+                - protocol: TCP
+                  port: 53
+                - protocol: UDP
+                  port: 5353
+                - protocol: TCP
+                  port: 5353
+            - ports:
+                - protocol: TCP
+                  port: 443
+                - protocol: TCP
+                  port: 6443
+            - to:
+                - podSelector:
+                    matchLabels:
+                      app: keda-operator
+              ports:
+                - protocol: TCP
+                  port: 9666
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "keda-operator-metrics-apiserver")]
+
+      # NOTE: the admission webhooks only talk to the api server.
+      - name: "ensure admission webhooks network policy rules are updated"
+        query: spec
+        action: merge
+        value:
+          ingress:
+            - ports:
+                - protocol: TCP
+                  port: 9443
+            - from:
+                - namespaceSelector: {}
+              ports:
+                - protocol: TCP
+                  port: 8080
+          egress:
+            - ports:
+                - protocol: UDP
+                  port: 53
+                - protocol: TCP
+                  port: 53
+                - protocol: UDP
+                  port: 5353
+                - protocol: TCP
+                  port: 5353
+            - ports:
+                - protocol: TCP
+                  port: 443
+                - protocol: TCP
+                  port: 6443
+        documentQuery:
+          - conditions:
+              - query: $[?($.metadata.name == "keda-admission-webhooks")]

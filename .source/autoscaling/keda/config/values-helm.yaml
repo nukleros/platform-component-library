@@ -1,0 +1,150 @@
+#
+# NOTE: this is the helm values file for the KEDA helm chart, which is vendored in via the
+# vendor.yaml file.  only values that differ from the chart defaults belong here.
+#
+# NOTE: the download script does not pass --namespace to 'helm template', so anything the
+# chart derives from .Release.Namespace renders as 'default'.  the chart exposes no values to
+# override this, so the namespace (and the service addresses derived from it) is handled by
+# the overlays.
+#
+
+# the image tags are pinned to the chart appVersion, so there is no need to pull on every start
+image:
+  pullPolicy: "IfNotPresent"
+
+# structured logs for log aggregation
+logging:
+  operator:
+    format: "json"
+  metricServer:
+    zapEncoder: "json"
+  webhooks:
+    format: "json"
+
+# NOTE: the 'kubernetes' flavor renders standard NetworkPolicy resources.  the default
+#       'cilium' flavor renders CiliumNetworkPolicy resources, which require the cilium cni.
+#       the rendered rules are adjusted by the networkpolicy overlay; see the notes there.
+networkPolicy:
+  enabled: true
+  flavor: "kubernetes"
+
+# expose prometheus metrics for each component.  pod and service monitors are left disabled, as
+# they require the prometheus operator crds.
+prometheus:
+  operator:
+    enabled: true
+  metricServer:
+    enabled: true
+  webhooks:
+    enabled: true
+
+# NOTE: only one operator replica is active at a time (via leader election), and the
+#       remainder stand by.  a second replica does not add capacity, but it reduces downtime
+#       during a node failure or drain.
+#       see https://keda.sh/docs/2.21/operate/cluster/#high-availability.
+operator:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app: "keda-operator"
+
+# NOTE: kubernetes only routes the external.metrics.k8s.io api to one APIService, so a second
+#       metrics server replica does not add capacity.  it is run so that the external metrics
+#       api (and therefore every HorizontalPodAutoscaler that KEDA manages) stays available
+#       during a node failure or drain.
+metricsServer:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app: "keda-operator-metrics-apiserver"
+
+webhooks:
+  replicaCount: 2
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          podAffinityTerm:
+            topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                app: "keda-admission-webhooks"
+
+# NOTE: prefer spreading replicas across zones.  topology.kubernetes.io/zone is a well-known
+#       label which every major cloud sets on its nodes with its own zone names, so no zones
+#       are named here.  ScheduleAnyway makes this a preference, so it is a no-op on single zone
+#       clusters or nodes without the label rather than leaving pods pending.
+topologySpreadConstraints:
+  operator:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: "ScheduleAnyway"
+      labelSelector:
+        matchLabels:
+          app: "keda-operator"
+  metricsServer:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: "ScheduleAnyway"
+      labelSelector:
+        matchLabels:
+          app: "keda-operator-metrics-apiserver"
+  webhooks:
+    - maxSkew: 1
+      topologyKey: "topology.kubernetes.io/zone"
+      whenUnsatisfiable: "ScheduleAnyway"
+      labelSelector:
+        matchLabels:
+          app: "keda-admission-webhooks"
+
+# NOTE: the AlwaysAllow eviction policy is not exposed by the chart, so it is set by the
+#       poddisruptionbudget overlay.
+podDisruptionBudget:
+  operator:
+    minAvailable: 1
+  metricServer:
+    minAvailable: 1
+  webhooks:
+    minAvailable: 1
+
+# NOTE: cpu limits are deliberately omitted on all components to avoid cpu throttling.  helm
+#       deep merges these with the chart defaults, so the default cpu limit must be removed
+#       with a null value rather than by leaving it out.  requests and memory limits are the
+#       upstream defaults from https://keda.sh/docs/2.21/operate/cluster/.
+resources:
+  operator:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: null
+      memory: "1000Mi"
+  metricServer:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: null
+      memory: "1000Mi"
+  webhooks:
+    requests:
+      cpu: "100m"
+      memory: "100Mi"
+    limits:
+      cpu: null
+      memory: "1000Mi"
+
+# do not inject environment variables for every service in the namespace into the pods
+enableServiceLinks: false

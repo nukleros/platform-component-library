@@ -1,0 +1,39 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+# NOTE: the ca bundle is deliberately not set here.  the keda operator generates and rotates
+#       its own certificates and patches the ca bundle into the webhook configuration at runtime.
+yamlFiles:
+  - name: "keda webhooks"
+    path: "../../vendor/keda.yaml"
+    outputPath: "autoscaling/keda/webhook.yaml"
+    overlays:
+      - name: "ensure we are only acting upon webhook resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "ValidatingWebhookConfiguration")]
+              - query: $[?($.kind != "MutatingWebhookConfiguration")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - webhooks[*].clientConfig.service.namespace
+        value: "{{ .namespace }}"
