@@ -9,7 +9,7 @@ For Claude users, a skill is available in this project to quickly
 generate new comoponents:
 
 ```
-/add-component CATEGORY=my-category PROJECT=my-project https://www.my-install-instructions.com
+/pcl-add-component CATEGORY=my-category PROJECT=my-project https://www.my-install-instructions.com
 ```
 
 The skill takes in inputs that the `Makefile` needs as well as 

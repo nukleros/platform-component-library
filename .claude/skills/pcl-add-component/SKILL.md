@@ -1,6 +1,6 @@
 ---
-name: add-component
-description: Add a new platform component (or upgrade an existing one) to this repo end to end - vendir download, yot overlays into the opinionated output format defined in STANDARDS.md (structure, naming, labels, production readiness), a deploy script, and verification on a local kind cluster. Works step by step, explains each step and asks before running it, and stays within strict guardrails. Use when asked to add, implement, or onboard a new component/project, e.g. "add KEDA as autoscaling/keda".
+name: pcl-add-component
+description: Add a new platform component library component (or upgrade an existing one) to this repo end to end - vendir download, yot overlays into the opinionated output format defined in STANDARDS.md (structure, naming, labels, production readiness), a deploy script, and verification on a local kind cluster. Works step by step, explains each step and asks before running it, and stays within strict guardrails. Use when asked to add, implement, or onboard a new component/project, e.g. "add KEDA as autoscaling/keda".
 argument-hint: CATEGORY=<category> PROJECT=<project> <upstream install docs URL>
 ---
 
