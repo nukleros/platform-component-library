@@ -31,27 +31,8 @@ most cases, you can `kubectl apply` directly.
 * **Updates** - an opinionated pipeline makes updating versions both trackable via 
 Git (e.g. see what changed), and easy to perform with the used tooling.
 
-* **Consistent Structure** - consistent naming for the output manifests:
-    * `ServiceAccount`, `Role`, `RoleBinding`, `ClusterRole`, `ClusterRoleBinding` == `rbac.yaml`
-    * `ConfigMap`, `Secret`, `ExternalSecret` == `config.yaml`
-    * `CustomResourceDefinition` == `crds.yaml`
-    * `MutatingWebhookConfiguration`, `ValidatingWebhookConfiguration`, `ValidatingAdmissionPolicy`,
-      `ValidatingAdmissionPolicyBinding` == `webhook.yaml`
-    * `Certificate`, `Issuer`, `ClusterIssuer` == `certificates.yaml`
-    * `Deployment` == `deployment.yaml`
-    * `StatefulSet` == `statefulset.yaml`
-    * `DaemonSet` == `daemonset.yaml`
-    * `Job`, `CronJob` == `job.yaml`
-    * `Service` == `service.yaml`
-    * `Ingress`  == `ingress.yaml`
-    * `IngressClass` == `ingress-class.yaml`
-    * `NetworkPolicy` == `networkpolicy.yaml`
-    * `PodDisruptionBudget` == `poddisruptionbudget.yaml`
-    * `HorizontalPodAutoscaler` == `horizontalpodautoscaler.yaml`
-    * `ResourceQuota` == `resourcequota.yaml`
-    * `NetworkAttachmentDefinition` == `networkattachmentdefinition.yaml`
-    * Mutually exclusive variants use a suffix, pick one (e.g. `service-aws.yaml`,
-      `service-nodeport.yaml`)
+* **Consistent Structure** - consistent directory structure, output manifest naming, labels
+and production readiness controls across every project.  See the [standards](STANDARDS.md).
 
 
 ## Supported Projects
