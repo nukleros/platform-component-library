@@ -1,0 +1,42 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+yamlFiles:
+  - name: "keda pod disruption budgets"
+    path: "../../vendor/keda.yaml"
+    outputPath: "autoscaling/keda/poddisruptionbudget.yaml"
+    overlays:
+      - name: "ensure we are only acting upon pod disruption budget resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "PodDisruptionBudget")]
+
+      - name: "ensure namespace is updated"
+        query: metadata.namespace
+        value: "{{ .namespace }}"
+
+      # NOTE: AlwaysAllow lets a node drain evict keda pods which are not ready (e.g. crash
+      #       looping), rather than blocking the drain on them.  the chart does not expose this.
+      - name: "ensure unhealthy pods may always be evicted"
+        query: spec
+        action: merge
+        value:
+          unhealthyPodEvictionPolicy: "AlwaysAllow"

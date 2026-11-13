@@ -1,0 +1,9 @@
+apiVersion: vendir.k14s.io/v1alpha1
+directories:
+- contents:
+  - helmChart:
+      appVersion: 2.21.0
+      version: 2.21.0
+    path: .
+  path: .source/autoscaling/keda/vendor-helm
+kind: LockConfig
