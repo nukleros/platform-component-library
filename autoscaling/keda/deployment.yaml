@@ -1,0 +1,459 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-operator
+  namespace: nukleros-autoscaling-system
+  labels:
+    app: keda-operator
+    name: keda-operator
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  revisionHistoryLimit: 10
+  replicas: 2
+  selector:
+    matchLabels:
+      app: keda-operator
+  template:
+    metadata:
+      labels:
+        app: keda-operator
+        name: keda-operator
+        app.kubernetes.io/name: keda-operator
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/part-of: keda-operator
+        app.kubernetes.io/version: 2.21.0
+        app.kubernetes.io/instance: keda
+        platform.nukleros.io/category: autoscaling
+        platform.nukleros.io/project: keda
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: keda-operator
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: keda-operator
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+          image: ghcr.io/kedacore/keda:2.21.0
+          command:
+            - /keda
+          args:
+            - --leader-elect
+            - --disable-compression=true
+            - --zap-log-level=info
+            - --zap-encoder=json
+            - --zap-time-encoding=rfc3339
+            - --enable-webhook-patching=true
+            - --cert-dir=/certs
+            - --enable-cert-rotation=true
+            - --cert-secret-name=kedaorg-certs
+            - --operator-service-name=keda-operator
+            - --metrics-service-bind-address=:9666
+            - --metrics-server-service-name=keda-operator-metrics-apiserver
+            - --webhooks-service-name=keda-admission-webhooks
+            - --k8s-cluster-name=kubernetes-default
+            - --k8s-cluster-domain=cluster.local
+            - --enable-prometheus-metrics=true
+            - --metrics-bind-address=:8080
+            - --http-max-idle-conns=0
+            - --http-max-idle-conns-per-host=1000
+            - --http-idle-conn-timeout=90s
+            - --service-account-token-mode=enforce-audience
+            - --vault-kubernetes-auth-token-file=/var/run/secrets/keda-vault/token
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 25
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 3
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          ports:
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+            - containerPort: 9666
+              name: metricsservice
+              protocol: TCP
+          env:
+            - name: KEDA_SERVICE_ACCOUNT_TOKEN_AUDIENCES
+              value: '[{"audience":"vault"}]'
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: WATCH_LABEL_SELECTOR
+              value: ""
+            - name: WATCH_LABEL_SELECTOR_FOR_TRIGGERAUTH
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OPERATOR_NAME
+              value: keda-operator
+            - name: KEDA_HTTP_DEFAULT_TIMEOUT
+              value: "3000"
+            - name: KEDA_KUBERNETES_API_TIMEOUT
+              value: 5s
+            - name: KEDA_HTTP_MIN_TLS_VERSION
+              value: TLS12
+            - name: KEDA_HTTP_TLS_CIPHER_LIST
+              value: ""
+            - name: KEDA_SERVICE_MIN_TLS_VERSION
+              value: TLS13
+            - name: KEDA_SERVICE_TLS_CIPHER_LIST
+              value: ""
+          volumeMounts:
+            - name: keda-vault-e6f0a1fbb43c8919
+              mountPath: /var/run/secrets/keda-vault
+              readOnly: true
+            - mountPath: /certs
+              name: certificates
+              readOnly: true
+          resources:
+            limits:
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      volumes:
+        - name: keda-vault-e6f0a1fbb43c8919
+          projected:
+            sources:
+              - serviceAccountToken:
+                  path: token
+                  audience: vault
+                  expirationSeconds: 3600
+        - name: certificates
+          secret:
+            defaultMode: 420
+            secretName: kedaorg-certs
+            optional: true
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: keda-operator
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: keda-operator
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-operator-metrics-apiserver
+  namespace: nukleros-autoscaling-system
+  labels:
+    app: keda-operator-metrics-apiserver
+    app.kubernetes.io/name: keda-operator-metrics-apiserver
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  revisionHistoryLimit: 10
+  replicas: 2
+  selector:
+    matchLabels:
+      app: keda-operator-metrics-apiserver
+  template:
+    metadata:
+      labels:
+        app: keda-operator-metrics-apiserver
+        app.kubernetes.io/name: keda-operator-metrics-apiserver
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/part-of: keda-operator
+        app.kubernetes.io/version: 2.21.0
+        app.kubernetes.io/instance: keda
+        platform.nukleros.io/category: autoscaling
+        platform.nukleros.io/project: keda
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: keda-metrics-server
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: keda-operator-metrics-apiserver
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+          image: ghcr.io/kedacore/keda-metrics-apiserver:2.21.0
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 6443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 6443
+              scheme: HTTPS
+            initialDelaySeconds: 5
+            periodSeconds: 3
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KEDA_HTTP_DEFAULT_TIMEOUT
+              value: "3000"
+            - name: KEDA_HTTP_MIN_TLS_VERSION
+              value: TLS12
+            - name: KEDA_HTTP_TLS_CIPHER_LIST
+              value: ""
+            - name: KEDA_SERVICE_MIN_TLS_VERSION
+              value: TLS13
+            - name: KEDA_SERVICE_TLS_CIPHER_LIST
+              value: ""
+          command:
+            - /keda-adapter
+          args:
+            - --port=8080
+            - --secure-port=6443
+            - --logtostderr=true
+            - --stderrthreshold=ERROR
+            - --disable-compression=true
+            - --metrics-service-address=keda-operator.nukleros-autoscaling-system.svc.cluster.local:9666
+            - --client-ca-file=/certs/ca.crt
+            - --tls-cert-file=/certs/tls.crt
+            - --tls-private-key-file=/certs/tls.key
+            - --cert-dir=/certs
+            - --v=0
+            - --zap-log-level=info
+            - --zap-encoder=json
+            - --zap-time-encoding=rfc3339
+          ports:
+            - containerPort: 6443
+              name: https
+              protocol: TCP
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /certs
+              name: certificates
+              readOnly: true
+          resources:
+            limits:
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      volumes:
+        - name: certificates
+          secret:
+            defaultMode: 420
+            secretName: kedaorg-certs
+      dnsPolicy: ClusterFirst
+      hostNetwork: false
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: keda-operator-metrics-apiserver
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: keda-operator-metrics-apiserver
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: keda-admission-webhooks
+  namespace: nukleros-autoscaling-system
+  labels:
+    app: keda-admission-webhooks
+    name: keda-admission-webhooks
+    app.kubernetes.io/name: keda-admission-webhooks
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+spec:
+  revisionHistoryLimit: 10
+  replicas: 2
+  selector:
+    matchLabels:
+      app: keda-admission-webhooks
+  template:
+    metadata:
+      labels:
+        app: keda-admission-webhooks
+        name: keda-admission-webhooks
+        app.kubernetes.io/name: keda-admission-webhooks
+        app.kubernetes.io/component: operator
+        app.kubernetes.io/part-of: keda-operator
+        app.kubernetes.io/version: 2.21.0
+        app.kubernetes.io/instance: keda
+        platform.nukleros.io/category: autoscaling
+        platform.nukleros.io/project: keda
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: keda-webhook
+      automountServiceAccountToken: true
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: keda-admission-webhooks
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+            seccompProfile:
+              type: RuntimeDefault
+          image: ghcr.io/kedacore/keda-admission-webhooks:2.21.0
+          command:
+            - /keda-admission-webhooks
+          args:
+            - --zap-log-level=info
+            - --zap-encoder=json
+            - --zap-time-encoding=rfc3339
+            - --cert-dir=/certs
+            - --health-probe-bind-address=:8081
+            - --metrics-bind-address=:8080
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 25
+            periodSeconds: 10
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 20
+            periodSeconds: 3
+            timeoutSeconds: 1
+            failureThreshold: 3
+            successThreshold: 1
+          ports:
+            - containerPort: 9443
+              name: http
+              protocol: TCP
+            - containerPort: 8080
+              name: metrics
+              protocol: TCP
+          env:
+            - name: WATCH_NAMESPACE
+              value: ""
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - mountPath: /certs
+              name: certificates
+              readOnly: true
+          resources:
+            limits:
+              memory: 1000Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+      volumes:
+        - name: certificates
+          secret:
+            defaultMode: 420
+            secretName: kedaorg-certs
+      hostNetwork: false
+      nodeSelector:
+        kubernetes.io/os: linux
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app: keda-admission-webhooks
+                topologyKey: kubernetes.io/hostname
+              weight: 100
+      topologySpreadConstraints:
+        - labelSelector:
+            matchLabels:
+              app: keda-admission-webhooks
+          maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway

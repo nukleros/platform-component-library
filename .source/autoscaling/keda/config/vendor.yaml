@@ -1,0 +1,13 @@
+---
+apiVersion: vendir.k14s.io/v1alpha1
+kind: Config
+minimumRequiredVersion: 0.30.0
+directories:
+  - path: .source/autoscaling/keda/vendor-helm
+    contents:
+      - path: ./
+        helmChart:
+          name: "keda"
+          version: "2.21.0"
+          repository:
+            url: "https://kedacore.github.io/charts"

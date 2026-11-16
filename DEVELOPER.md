@@ -5,6 +5,16 @@ The following is for developers and outlines how to:
 1. [Add New Project](#add-new-project)
 2. [Upgrade Existing Project](#version-upgrade)
 
+For Claude users, a skill is available in this project to quickly
+generate new comoponents:
+
+```
+/pcl-add-component CATEGORY=my-category PROJECT=my-project https://www.my-install-instructions.com
+```
+
+The skill takes in inputs that the `Makefile` needs as well as 
+a web URL to the installation documentation that is read.
+
 
 ## Diagram
 
@@ -44,7 +54,8 @@ make download
 
 Write your YOT overlay files at `.source/$CATEGORY/$PROJECT/config/overlays/*`
 
-The YOT overlay instructions provide instructions to produce the opinionated manifests (the output).  
+The YOT overlay instructions provide instructions to produce the opinionated manifests (the output),
+which must follow the [standards](STANDARDS.md).  
 Refer to other examples in this project and the [yaml-overlay-tool
 docs](https://docs.yaml-overlay-tool.io/).  Overlay the upstream manifests with
 yot to produce the final static manifests.

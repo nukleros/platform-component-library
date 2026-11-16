@@ -1,0 +1,505 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator
+  namespace: nukleros-autoscaling-system
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-metrics-server
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-metrics-server
+  namespace: nukleros-autoscaling-system
+automountServiceAccountToken: true
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-webhook
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-webhook
+  namespace: nukleros-autoscaling-system
+automountServiceAccountToken: true
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+      - configmaps/status
+      - limitranges
+      - pods
+      - services
+      - serviceaccounts
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - events.k8s.io
+      - ""
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - '*'
+    resources:
+      - '*/scale'
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - '*'
+    resources:
+      - '*'
+    verbs:
+      - get
+  - apiGroups:
+      - apps
+    resources:
+      - deployments/scale
+      - statefulsets/scale
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - replicasets
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - batch
+    resources:
+      - jobs
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - eventing.keda.sh
+    resources:
+      - cloudeventsources
+      - cloudeventsources/status
+      - clustercloudeventsources
+      - clustercloudeventsources/status
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - keda.sh
+    resources:
+      - scaledjobs
+      - scaledjobs/finalizers
+      - scaledjobs/status
+      - scaledobjects
+      - scaledobjects/finalizers
+      - scaledobjects/status
+      - triggerauthentications
+      - triggerauthentications/status
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-minimal-cluster-role
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-minimal-cluster-role
+rules:
+  - apiGroups:
+      - keda.sh
+    resources:
+      - clustertriggerauthentications
+      - clustertriggerauthentications/status
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - admissionregistration.k8s.io
+    resources:
+      - validatingwebhookconfigurations
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - apiregistration.k8s.io
+    resources:
+      - apiservices
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - eventing.keda.sh
+    resources:
+      - cloudeventsources
+      - cloudeventsources/status
+      - clustercloudeventsources
+      - clustercloudeventsources/status
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-external-metrics-reader
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-external-metrics-reader
+rules:
+  - apiGroups:
+      - external.metrics.k8s.io
+    resources:
+      - externalmetrics
+    verbs:
+      - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-webhook
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-webhook
+rules:
+  - apiGroups:
+      - autoscaling
+    resources:
+      - horizontalpodautoscalers
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - keda.sh
+    resources:
+      - scaledobjects
+    verbs:
+      - list
+      - watch
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - limitranges
+    verbs:
+      - list
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - create
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keda-operator
+subjects:
+  - kind: ServiceAccount
+    name: keda-operator
+    namespace: nukleros-autoscaling-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-minimal
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-minimal
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keda-operator-minimal-cluster-role
+subjects:
+  - kind: ServiceAccount
+    name: keda-operator
+    namespace: nukleros-autoscaling-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-system-auth-delegator
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-system-auth-delegator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - kind: ServiceAccount
+    name: keda-metrics-server
+    namespace: nukleros-autoscaling-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-hpa-controller-external-metrics
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-hpa-controller-external-metrics
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keda-operator-external-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: horizontal-pod-autoscaler
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-webhook
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-webhook
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: keda-operator-webhook
+subjects:
+  - kind: ServiceAccount
+    name: keda-webhook
+    namespace: nukleros-autoscaling-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-certs
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-certs
+  namespace: nukleros-autoscaling-system
+rules:
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - get
+    resourceNames:
+      - kedaorg-certs
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - create
+      - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-certs
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-certs
+  namespace: nukleros-autoscaling-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: keda-operator-certs
+subjects:
+  - kind: ServiceAccount
+    name: keda-operator
+    namespace: nukleros-autoscaling-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/name: keda-operator-auth-reader
+    app.kubernetes.io/component: operator
+    app.kubernetes.io/part-of: keda-operator
+    app.kubernetes.io/version: 2.21.0
+    app.kubernetes.io/instance: keda
+    platform.nukleros.io/category: autoscaling
+    platform.nukleros.io/project: keda
+  name: keda-operator-auth-reader
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+  - kind: ServiceAccount
+    name: keda-metrics-server
+    namespace: nukleros-autoscaling-system

@@ -1,0 +1,38 @@
+---
+commonOverlays:
+  - name: "apply nukleros labels"
+    query: "metadata.labels"
+    value:
+      platform.nukleros.io/category: "{{ .category }}"
+      platform.nukleros.io/project: "{{ .project }}"
+    onMissing:
+      action: inject
+
+  - name: "remove the helm info"
+    query:
+      - metadata.labels["helm.sh/chart"]
+      - metadata.labels["app.kubernetes.io/managed-by"]
+      - metadata.labels["heritage"]
+      - metadata.labels["release"]
+      - metadata.labels["chart"]
+    action: delete
+
+# NOTE: the ca bundle is deliberately not set here.  the keda operator generates and rotates
+#       its own certificates and patches the ca bundle into the api service at runtime.
+yamlFiles:
+  - name: "keda api services"
+    path: "../../vendor/keda.yaml"
+    outputPath: "autoscaling/keda/apiservice.yaml"
+    overlays:
+      - name: "ensure we are only acting upon api service resources"
+        query: "$"
+        action: delete
+        documentQuery:
+          - conditions:
+              - query: $[?($.kind != "APIService")]
+
+      - name: "ensure namespace is updated"
+        query:
+          - metadata.namespace
+          - spec.service.namespace
+        value: "{{ .namespace }}"
